@@ -110,7 +110,7 @@
             50% { transform: translateY(-20px) rotate(5deg); }
         }
 
-        /* --- MODAL (Usado para Reset e Offline) --- */
+        /* --- MODAL (Usado para Reset, Offline e Stats) --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -140,6 +140,7 @@
             max-width: 90%;
             width: 450px;
             animation: popIn 0.3s ease-out;
+            color: #ddd;
         }
 
         /* Estilo especial para o modal Offline */
@@ -155,6 +156,29 @@
         .modal h3 { margin-bottom: 1rem; color: var(--accent-color); font-size: 1.5rem; font-family: 'Fredoka One', cursive; }
         .modal p { margin-bottom: 1.5rem; color: #ddd; line-height: 1.5; }
         .modal-buttons { display: flex; gap: 1rem; justify-content: center; }
+
+        /* Estilos da lista de Estatísticas */
+        .stats-list {
+            text-align: left;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.95rem;
+        }
+        
+        .stat-row:last-child { border-bottom: none; }
+        .stat-label { color: #aaa; }
+        .stat-value { font-weight: bold; color: #fff; }
 
         /* --- JOGO PRINCIPAL --- */
         .game-container {
@@ -491,6 +515,17 @@
         </div>
     </div>
 
+    <!-- MODAL DE ESTATÍSTICAS -->
+    <div id="stats-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3>Estatísticas 📊</h3>
+            <div id="stats-content" class="stats-list">
+                <!-- Conteúdo gerado via JS -->
+            </div>
+            <button id="close-stats-btn" class="util-btn">Fechar</button>
+        </div>
+    </div>
+
     <!-- MODAL DE ONLINE/OFFLINE -->
     <div id="offline-modal" class="modal-overlay hidden">
         <div class="modal offline-theme">
@@ -538,6 +573,7 @@
             
             <div class="controls">
                 <button id="save-btn" class="util-btn">💾 Salvar</button>
+                <button id="stats-btn" class="util-btn">📊 Stats</button>
             </div>
             <div id="message-log">Comece a fazer carinho no gato!</div>
 
@@ -584,9 +620,13 @@
             clickValue: 1,
             activeTab: 'buildings',
             buyMultiplier: 1, // 1, 5, 10 ou 'MAX'
-            sellMode: false, // Novo estado: Modo de Venda
+            sellMode: false,
             clickHistory: [], 
             lastSaveTime: Date.now(),
+            
+            // Novas Estatísticas
+            startTime: Date.now(),
+            totalClicks: 0,
             
             buildings: [
                 { id: 0, name: "Petisco", baseCost: 15, cps: 0.1, count: 0, icon: "🐟" },
@@ -595,7 +635,10 @@
                 { id: 3, name: "Catnip (Erva)", baseCost: 12000, cps: 47, count: 0, icon: "🌿" },
                 { id: 4, name: "Fábrica de Sachê", baseCost: 130000, cps: 260, count: 0, icon: "🏭" },
                 { id: 5, name: "Santuário Felino", baseCost: 1400000, cps: 1400, count: 0, icon: "⛩️" },
-                { id: 6, name: "Planeta dos Gatos", baseCost: 20000000, cps: 7800, count: 0, icon: "🪐" }
+                { id: 6, name: "Planeta dos Gatos", baseCost: 20000000, cps: 7800, count: 0, icon: "🪐" },
+                // Novos Prédios de Tier Alto
+                { id: 7, name: "Dimensão Gatástica", baseCost: 500000000000, cps: 500000, count: 0, icon: "🌌" },
+                { id: 8, name: "Deus Gato", baseCost: 100000000000000, cps: 10000000, count: 0, icon: "🔱" }
             ],
 
             clickItems: [
@@ -603,17 +646,39 @@
                 { id: 101, name: "Laser Pointer", baseCost: 2500, clickIncrease: 5, count: 0, icon: "🔦" },
                 { id: 102, name: "Luva de Escovar", baseCost: 10000, clickIncrease: 15, count: 0, icon: "🧤" },
                 { id: 103, name: "Varinha Mágica", baseCost: 50000, clickIncrease: 50, count: 0, icon: "🪄" },
-                { id: 104, name: "Mão Robótica", baseCost: 200000, clickIncrease: 200, count: 0, icon: "🤖" }
+                { id: 104, name: "Mão Robótica", baseCost: 200000, clickIncrease: 200, count: 0, icon: "🤖" },
+                { id: 105, name: "Manopla do Infinito", baseCost: 50000000, clickIncrease: 5000, count: 0, icon: "💎" },
+                { id: 106, name: "Dedo de Midas", baseCost: 1000000000, clickIncrease: 25000, count: 0, icon: "👑" }
             ],
 
             boosts: [
-                { id: 200, name: "Salmão Fresco", baseCost: 1000, targetId: 0, multiplier: 2, count: 0, icon: "🍣", desc: "Petiscos geram 2x mais" },
-                { id: 201, name: "Papelão Reforçado", baseCost: 5000, targetId: 1, multiplier: 2, count: 0, icon: "📦", desc: "Caixas geram 2x mais" },
-                { id: 202, name: "Sisal Premium", baseCost: 11000, targetId: 2, multiplier: 2, count: 0, icon: "🧵", desc: "Arranhadores geram 2x mais" },
-                { id: 203, name: "Adubo Orgânico", baseCost: 120000, targetId: 3, multiplier: 2, count: 0, icon: "🌱", desc: "Catnip gera 2x mais" },
-                { id: 204, name: "Automação", baseCost: 1300000, targetId: 4, multiplier: 2, count: 0, icon: "⚙️", desc: "Fábricas geram 2x mais" },
-                { id: 205, name: "Ídolo Dourado", baseCost: 14000000, targetId: 5, multiplier: 2, count: 0, icon: "🗿", desc: "Santuários geram 2x mais" },
-                { id: 206, name: "Bandeira da Paz", baseCost: 200000000, targetId: 6, multiplier: 2, count: 0, icon: "🏳️", desc: "Planetas geram 2x mais" }
+                // Ordenado por PREÇO (Crescente)
+                { id: 200, name: "Salmão Fresco", baseCost: 1000, targetId: 0, targetType: 'building', multiplier: 2, count: 0, icon: "🍣", desc: "Petiscos geram 2x mais" },
+                { id: 300, name: "Esmalte Brilhante", baseCost: 2500, targetId: 100, targetType: 'click', multiplier: 2, count: 0, icon: "💅✨", desc: "Unhas dão 2x mais" },
+                { id: 201, name: "Papelão Reforçado", baseCost: 5000, targetId: 1, targetType: 'building', multiplier: 2, count: 0, icon: "📦", desc: "Caixas geram 2x mais" },
+                { id: 202, name: "Sisal Premium", baseCost: 11000, targetId: 2, targetType: 'building', multiplier: 2, count: 0, icon: "🧵", desc: "Arranhadores geram 2x mais" },
+                { id: 301, name: "Pilhas Alcalinas", baseCost: 12000, targetId: 101, targetType: 'click', multiplier: 2, count: 0, icon: "🔋", desc: "Lasers dão 2x mais" },
+                { id: 210, name: "Tempero Gourmet", baseCost: 50000, targetId: 0, targetType: 'building', multiplier: 2, count: 0, icon: "🧂", desc: "Petiscos geram +2x" },
+                { id: 302, name: "Escova de Aço", baseCost: 50000, targetId: 102, targetType: 'click', multiplier: 2, count: 0, icon: "🚿", desc: "Luvas dão 2x mais" },
+                { id: 310, name: "Manicure de Ouro", baseCost: 100000, targetId: 100, targetType: 'click', multiplier: 2, count: 0, icon: "⚜️", desc: "Unhas dão +2x" },
+                { id: 203, name: "Adubo Orgânico", baseCost: 120000, targetId: 3, targetType: 'building', multiplier: 2, count: 0, icon: "🌱", desc: "Catnip gera 2x mais" },
+                { id: 211, name: "Condomínio Felino", baseCost: 200000, targetId: 1, targetType: 'building', multiplier: 2, count: 0, icon: "🏘️", desc: "Caixas geram +2x" },
+                { id: 303, name: "Pó Mágico", baseCost: 250000, targetId: 103, targetType: 'click', multiplier: 2, count: 0, icon: "✨", desc: "Varinhas dão 2x mais" },
+                { id: 311, name: "Laser de Discoteca", baseCost: 500000, targetId: 101, targetType: 'click', multiplier: 2, count: 0, icon: "🕺", desc: "Lasers dão +2x" },
+                { id: 212, name: "Torre de Sisal", baseCost: 1000000, targetId: 2, targetType: 'building', multiplier: 2, count: 0, icon: "🗼", desc: "Arranhadores geram +2x" },
+                { id: 304, name: "Chip de IA", baseCost: 1000000, targetId: 104, targetType: 'click', multiplier: 2, count: 0, icon: "💾", desc: "Mãos Robóticas dão 2x mais" },
+                { id: 204, name: "Automação", baseCost: 1300000, targetId: 4, targetType: 'building', multiplier: 2, count: 0, icon: "⚙️", desc: "Fábricas geram 2x mais" },
+                { id: 312, name: "Luva de Seda", baseCost: 2000000, targetId: 102, targetType: 'click', multiplier: 2, count: 0, icon: "🧣", desc: "Luvas dão +2x" },
+                { id: 213, name: "Estufa Hidropônica", baseCost: 5000000, targetId: 3, targetType: 'building', multiplier: 2, count: 0, icon: "🧪", desc: "Catnip gera +2x" },
+                { id: 313, name: "Varinha Real", baseCost: 10000000, targetId: 103, targetType: 'click', multiplier: 2, count: 0, icon: "🤴", desc: "Varinhas dão +2x" },
+                { id: 205, name: "Ídolo Dourado", baseCost: 14000000, targetId: 5, targetType: 'building', multiplier: 2, count: 0, icon: "🗿", desc: "Santuários geram 2x mais" },
+                { id: 214, name: "Robôs Felinos", baseCost: 50000000, targetId: 4, targetType: 'building', multiplier: 2, count: 0, icon: "🦾", desc: "Fábricas geram +2x" },
+                { id: 314, name: "Nanotecnologia", baseCost: 100000000, targetId: 104, targetType: 'click', multiplier: 2, count: 0, icon: "🧬", desc: "Mãos Robóticas dão +2x" },
+                { id: 206, name: "Bandeira da Paz", baseCost: 200000000, targetId: 6, targetType: 'building', multiplier: 2, count: 0, icon: "🏳️", desc: "Planetas geram 2x mais" },
+                { id: 215, name: "Peregrinação Global", baseCost: 500000000, targetId: 5, targetType: 'building', multiplier: 2, count: 0, icon: "🕋", desc: "Santuários geram +2x" },
+                { id: 216, name: "Galáxia de Leite", baseCost: 5000000000, targetId: 6, targetType: 'building', multiplier: 2, count: 0, icon: "🥛", desc: "Planetas geram +2x" },
+                { id: 220, name: "Dobra Espacial", baseCost: 5000000000000, targetId: 7, targetType: 'building', multiplier: 2, count: 0, icon: "🌀", desc: "Dimensões geram 2x mais" },
+                { id: 221, name: "Oferenda Cósmica", baseCost: 1000000000000000, targetId: 8, targetType: 'building', multiplier: 2, count: 0, icon: "🪐", desc: "Deuses geram 2x mais" }
             ]
         };
 
@@ -626,6 +691,7 @@
             storeContainer: document.getElementById('store-container'),
             msgLog: document.getElementById('message-log'),
             saveBtn: document.getElementById('save-btn'),
+            statsBtn: document.getElementById('stats-btn'),
             resetBtn: document.getElementById('reset-btn'),
             title: document.querySelector('title'),
             // Tela Inicial
@@ -640,6 +706,10 @@
             offlineTimeDisplay: document.getElementById('offline-time'),
             offlineEarningsDisplay: document.getElementById('offline-earnings'),
             closeOfflineBtn: document.getElementById('close-offline-btn'),
+            // Modal Stats
+            statsModal: document.getElementById('stats-modal'),
+            statsContent: document.getElementById('stats-content'),
+            closeStatsBtn: document.getElementById('close-stats-btn'),
             // Abas
             tabBuildings: document.getElementById('tab-buildings'),
             tabUpgrades: document.getElementById('tab-upgrades'),
@@ -674,6 +744,7 @@
             // Eventos
             elements.bigCat.addEventListener('click', handleCatClick);
             elements.saveBtn.addEventListener('click', () => { saveGame(); showMessage("Progresso salvo manualmente!"); });
+            elements.statsBtn.addEventListener('click', showStatsModal);
             
             // Modais
             elements.resetBtn.addEventListener('click', () => {
@@ -689,6 +760,11 @@
             elements.closeOfflineBtn.addEventListener('click', () => {
                 elements.offlineModal.classList.add('hidden');
             });
+
+            // Botão do Modal Stats
+            elements.closeStatsBtn.addEventListener('click', () => {
+                elements.statsModal.classList.add('hidden');
+            });
             
             elements.startBtn.addEventListener('click', startGame);
 
@@ -700,6 +776,59 @@
 
         function startGame() {
             elements.startScreen.classList.add('hidden');
+        }
+
+        function showStatsModal() {
+            const timePlayed = Date.now() - gameState.startTime;
+            
+            // Formata tempo
+            const hours = Math.floor(timePlayed / 3600000);
+            const minutes = Math.floor((timePlayed % 3600000) / 60000);
+            const seconds = Math.floor((timePlayed % 60000) / 1000);
+            
+            let timeString = "";
+            if(hours > 0) timeString += `${hours}h `;
+            if(minutes > 0) timeString += `${minutes}m `;
+            timeString += `${seconds}s`;
+
+            // Totais
+            const totalBuildings = gameState.buildings.reduce((acc, b) => acc + b.count, 0);
+            const totalUpgrades = gameState.clickItems.reduce((acc, i) => acc + i.count, 0);
+            const totalBoosts = gameState.boosts.reduce((acc, b) => acc + b.count, 0);
+
+            // Gera HTML
+            elements.statsContent.innerHTML = `
+                <div class="stat-row">
+                    <span class="stat-label">Ronrons Atuais:</span>
+                    <span class="stat-value">${formatNumber(gameState.score)}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Ronrons Totais (Histórico):</span>
+                    <span class="stat-value">${formatNumber(gameState.totalScoreAccumulated)}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Cliques no Gato:</span>
+                    <span class="stat-value">${formatNumber(gameState.totalClicks)}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Tempo de Jogo:</span>
+                    <span class="stat-value">${timeString}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Ronronadores:</span>
+                    <span class="stat-value">${totalBuildings}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Mimos Comprados:</span>
+                    <span class="stat-value">${totalUpgrades}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Acessórios Desbloqueados:</span>
+                    <span class="stat-value">${totalBoosts}/${gameState.boosts.length}</span>
+                </div>
+            `;
+
+            elements.statsModal.classList.remove('hidden');
         }
 
         // --- Função para Alternar Modo (Comprar/Vender) ---
@@ -758,6 +887,7 @@
             addScore(gameState.clickValue);
             
             gameState.clickHistory.push(Date.now());
+            gameState.totalClicks = (gameState.totalClicks || 0) + 1; // Incrementa estatística
 
             const msgs = ["+1", "Miau!", "Prrr", "❤️"];
             const text = msgs[Math.floor(Math.random() * msgs.length)];
@@ -817,11 +947,8 @@
                     // Lógica para Habilitar/Desabilitar
                     if (gameState.sellMode && gameState.activeTab !== 'boosts') {
                          // No modo venda, habilita se tiver itens para vender
-                         // Boosts não podem ser vendidos
                          const { refundAmount, count } = getBulkRefund(item, gameState.buyMultiplier);
                          
-                         // Se tiver count > 0 pra vender (baseado no multiplicador)
-                         // Para MAX, se count for > 0 habilita. Para fixo, se tiver o suficiente.
                          if (count > 0) {
                              btn.classList.remove('disabled');
                          } else {
@@ -888,7 +1015,6 @@
             count = itemsToSell;
 
             // Calcula reembolso do último comprado para baixo
-            // Custo do N-ésimo item = Base * 1.15^(N-1)
             let tempCount = item.count; 
             
             for (let i = 0; i < itemsToSell; i++) {
@@ -957,8 +1083,6 @@
                         countText = isOwned ? "✔" : "";
                     } else {
                         const { totalCost, count } = getBulkCost(item, gameState.buyMultiplier);
-                        // Custo em vermelho por padrão (será cinza se disabled pelo CSS)
-                        // ou verde se tiver dinheiro (mas aqui usamos cor padrão do CSS, a classe price força vermelho se quisermos)
                         costText = `🧶 ${formatNumber(totalCost)}`;
                         
                         if (gameState.buyMultiplier === 'MAX') {
@@ -1043,7 +1167,14 @@
                 if (gameState.score >= cost) {
                     gameState.score -= cost;
                     item.count++;
-                    recalculateCPS();
+                    
+                    // Verifica se o boost afeta Click (Mimo) ou CPS (Building)
+                    if (item.targetType === 'click') {
+                        recalculateClickValue();
+                    } else {
+                        recalculateCPS();
+                    }
+                    
                     renderStore();
                     showMessage(`Acessório comprado!`);
                 }
@@ -1077,7 +1208,8 @@
                 let buildingCPS = b.cps;
                 
                 gameState.boosts.forEach(boost => {
-                    if (boost.targetId === b.id && boost.count > 0) {
+                    // Só aplica se for targetType 'building' (ou undefined, compatibilidade antiga) e ID bater
+                    if ((boost.targetType === 'building' || !boost.targetType) && boost.targetId === b.id && boost.count > 0) {
                         buildingCPS *= boost.multiplier;
                     }
                 });
@@ -1090,7 +1222,16 @@
         function recalculateClickValue() {
             let clickVal = 1; 
             gameState.clickItems.forEach(item => {
-                clickVal += item.count * item.clickIncrease;
+                let itemValue = item.clickIncrease;
+                
+                // Verifica Boosts de Clique
+                gameState.boosts.forEach(boost => {
+                    if (boost.targetType === 'click' && boost.targetId === item.id && boost.count > 0) {
+                        itemValue *= boost.multiplier;
+                    }
+                });
+
+                clickVal += item.count * itemValue;
             });
             gameState.clickValue = clickVal;
         }
@@ -1124,9 +1265,12 @@
 
         function formatNumber(num) {
             num = Number(num);
-            if (num >= 1000000000) return (num / 1000000000).toFixed(2) + 'B';
-            if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
-            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            if (num >= 1e18) return (num / 1e18).toFixed(2) + 'Q'; // Quintilhão
+            if (num >= 1e15) return (num / 1e15).toFixed(2) + 'q'; // Quadrilhão
+            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T'; // Trilhão
+            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';   // Bilhão
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';   // Milhão
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k'; // Mil
             return Number.isInteger(num) ? num : num.toFixed(1);
         }
 
@@ -1149,6 +1293,9 @@
                     const parsed = JSON.parse(saved);
                     gameState.score = parsed.score || 0;
                     gameState.totalScoreAccumulated = parsed.totalScoreAccumulated || 0;
+                    // Carrega estatísticas novas com fallback
+                    gameState.startTime = parsed.startTime || Date.now();
+                    gameState.totalClicks = parsed.totalClicks || 0;
                     
                     if (parsed.buildings) {
                         parsed.buildings.forEach((savedB, index) => {
