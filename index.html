@@ -110,14 +110,14 @@
             50% { transform: translateY(-20px) rotate(5deg); }
         }
 
-        /* --- MODAL DE CONFIRMAÇÃO --- */
+        /* --- MODAL (Usado para Reset e Offline) --- */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.85);
             z-index: 3000;
             display: flex;
             justify-content: center;
@@ -133,16 +133,17 @@
         .modal {
             background-color: var(--panel-color);
             padding: 2rem;
-            border-radius: 10px;
+            border-radius: 15px;
             text-align: center;
             border: 2px solid var(--accent-color);
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            box-shadow: 0 0 30px rgba(0,0,0,0.7);
             max-width: 90%;
-            width: 400px;
+            width: 450px;
+            animation: popIn 0.3s ease-out;
         }
 
-        .modal h3 { margin-bottom: 1rem; color: var(--accent-color); }
-        .modal p { margin-bottom: 2rem; color: #ddd; }
+        .modal h3 { margin-bottom: 1rem; color: var(--accent-color); font-size: 1.5rem; font-family: 'Fredoka One', cursive; }
+        .modal p { margin-bottom: 1.5rem; color: #ddd; line-height: 1.5; }
         .modal-buttons { display: flex; gap: 1rem; justify-content: center; }
 
         /* --- JOGO PRINCIPAL --- */
@@ -196,10 +197,11 @@
         }
 
         .cat-clicker {
-            font-size: 13rem;
+            font-size: 13rem; /* Volta a usar tamanho de fonte para o emoji */
             filter: drop-shadow(0 0 25px rgba(0,0,0,0.6));
             transition: transform 0.05s;
             line-height: 1;
+            /* Removemos flexbox e width/height fixos da imagem */
         }
 
         .cat-clicker:active {
@@ -400,6 +402,24 @@
         </div>
     </div>
 
+    <!-- MODAL DE ONLINE/OFFLINE -->
+    <div id="offline-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3>Bem-vindo de volta! 🌙</h3>
+            <p>Seus gatos continuaram ronronando enquanto você estava fora.</p>
+            <div style="margin: 20px 0;">
+                <p style="font-size: 0.9rem; margin-bottom: 5px;">Você ficou fora por:</p>
+                <p id="offline-time" style="font-size: 1.1rem; color: #fff; font-weight: bold;">0s</p>
+                <br>
+                <p style="font-size: 0.9rem; margin-bottom: 5px;">Seus gatos geraram:</p>
+                <p id="offline-earnings" style="font-size: 2rem; color: var(--accent-color); font-weight: bold; text-shadow: 0 0 10px rgba(255,204,0,0.3);">+0</p>
+            </div>
+            <div class="modal-buttons">
+                <button id="close-offline-btn" class="util-btn" style="background-color: var(--accent-color); color: #201a1e; border: none;">Coletar Ronrons</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DE RESET -->
     <div id="reset-modal" class="modal-overlay hidden">
         <div class="modal">
@@ -423,7 +443,7 @@
             </div>
 
             <div class="clicker-container">
-                <!-- O Gato Gigante -->
+                <!-- O Gato Gigante (Voltou a ser Emoji) -->
                 <div id="big-cat" class="cat-clicker">🐱</div>
             </div>
             
@@ -432,7 +452,7 @@
             </div>
             <div id="message-log">Comece a fazer carinho no gato!</div>
 
-            <!-- Botão de Reset movido para cá (isolado) -->
+            <!-- Botão de Reset -->
             <button id="reset-btn" class="util-btn danger">🗑️ Resetar</button>
         </section>
 
@@ -458,10 +478,10 @@
             totalScoreAccumulated: 0,
             cps: 0,
             clickValue: 1,
-            activeTab: 'buildings', // 'buildings', 'upgrades', 'boosts'
+            activeTab: 'buildings',
             clickHistory: [], 
+            lastSaveTime: Date.now(), // Novo campo para rastrear tempo
             
-            // Edifícios que geram ronrons automáticos (CPS)
             buildings: [
                 { id: 0, name: "Petisco", baseCost: 15, cps: 0.1, count: 0, icon: "🐟" },
                 { id: 1, name: "Caixa de Papelão", baseCost: 100, cps: 1, count: 0, icon: "📦" },
@@ -472,7 +492,6 @@
                 { id: 6, name: "Planeta dos Gatos", baseCost: 20000000, cps: 7800, count: 0, icon: "🪐" }
             ],
 
-            // Itens que melhoram o clique manual (Click Value)
             clickItems: [
                 { id: 100, name: "Unha Postiça", baseCost: 500, clickIncrease: 1, count: 0, icon: "💅" },
                 { id: 101, name: "Laser Pointer", baseCost: 2500, clickIncrease: 5, count: 0, icon: "🔦" },
@@ -481,7 +500,6 @@
                 { id: 104, name: "Mão Robótica", baseCost: 200000, clickIncrease: 200, count: 0, icon: "🤖" }
             ],
 
-            // Acessórios (Boosts) - Multiplicam produção de prédios específicos
             boosts: [
                 { id: 200, name: "Salmão Fresco", baseCost: 1000, targetId: 0, multiplier: 2, count: 0, icon: "🍣", desc: "Petiscos geram 2x mais" },
                 { id: 201, name: "Papelão Reforçado", baseCost: 5000, targetId: 1, multiplier: 2, count: 0, icon: "📦", desc: "Caixas geram 2x mais" },
@@ -511,6 +529,11 @@
             resetModal: document.getElementById('reset-modal'),
             confirmResetBtn: document.getElementById('confirm-reset'),
             cancelResetBtn: document.getElementById('cancel-reset'),
+            // Modal Offline
+            offlineModal: document.getElementById('offline-modal'),
+            offlineTimeDisplay: document.getElementById('offline-time'),
+            offlineEarningsDisplay: document.getElementById('offline-earnings'),
+            closeOfflineBtn: document.getElementById('close-offline-btn'),
             // Abas
             tabBuildings: document.getElementById('tab-buildings'),
             tabUpgrades: document.getElementById('tab-upgrades'),
@@ -522,14 +545,13 @@
         function init() {
             loadGame();
             
-            // Garantir que a aba ativa visualmente corresponda ao estado
             updateTabVisuals();
             renderStore();
             
             // Loops
             setInterval(gameLoop, 100); 
 
-            // --- SISTEMA DE SAVE AUTOMÁTICO ---
+            // Save Automático
             setInterval(() => {
                 saveGame();
                 showMessage("Jogo salvo automaticamente 💾"); 
@@ -543,22 +565,24 @@
             elements.bigCat.addEventListener('click', handleCatClick);
             elements.saveBtn.addEventListener('click', () => { saveGame(); showMessage("Progresso salvo manualmente!"); });
             
-            // Lógica do Modal de Reset
+            // Modais
             elements.resetBtn.addEventListener('click', () => {
                 elements.resetModal.classList.remove('hidden');
                 elements.resetModal.style.opacity = 1;
             });
-
             elements.cancelResetBtn.addEventListener('click', () => {
                 elements.resetModal.classList.add('hidden');
             });
-
             elements.confirmResetBtn.addEventListener('click', performReset);
             
-            // Evento da Tela Inicial
+            // Botão do Modal Offline
+            elements.closeOfflineBtn.addEventListener('click', () => {
+                elements.offlineModal.classList.add('hidden');
+            });
+            
             elements.startBtn.addEventListener('click', startGame);
 
-            // Eventos das Abas
+            // Abas
             elements.tabBuildings.addEventListener('click', () => switchTab('buildings'));
             elements.tabUpgrades.addEventListener('click', () => switchTab('upgrades'));
             elements.tabBoosts.addEventListener('click', () => switchTab('boosts'));
@@ -641,9 +665,8 @@
             activeList.forEach(item => {
                 const btn = document.getElementById(`btn-item-${item.id}`);
                 if (btn) {
-                    // Para Boosts comprados, mantemos o visual de "Comprado"
                     if (gameState.activeTab === 'boosts' && item.count > 0) {
-                        return; // Não mexe no estilo se já comprou
+                        return; 
                     }
 
                     const cost = getItemCost(item);
@@ -660,7 +683,6 @@
         // --- Loja ---
 
         function getItemCost(item) {
-            // Boosts não aumentam de preço (compra única)
             if (item.targetId !== undefined) {
                 return item.baseCost;
             }
@@ -677,7 +699,7 @@
             
             listToRender.forEach(item => {
                 const cost = getItemCost(item);
-                const isBoost = item.targetId !== undefined; // Verifica se é um boost
+                const isBoost = item.targetId !== undefined; 
                 const isOwned = isBoost && item.count > 0;
 
                 const div = document.createElement('div');
@@ -685,7 +707,7 @@
                 
                 if (isOwned) {
                     div.classList.add('purchased');
-                    div.classList.remove('disabled'); // Remove disabled visual padrão pra aplicar o de purchased
+                    div.classList.remove('disabled'); 
                 }
 
                 div.id = `btn-item-${item.id}`;
@@ -693,7 +715,6 @@
                     div.onclick = () => buyItem(item.id);
                 }
                 
-                // Texto de benefício
                 let benefitText = "";
                 let costText = `🧶 ${formatNumber(cost)}`;
                 let countText = item.count;
@@ -729,7 +750,6 @@
         function buyItem(id) {
             let item, type;
 
-            // Identifica o tipo de item baseado na aba ativa ou busca geral
             item = gameState.buildings.find(b => b.id === id);
             type = 'building';
             
@@ -744,7 +764,6 @@
 
             if (!item) return;
 
-            // Impede recompra de boost
             if (type === 'boost' && item.count > 0) return;
 
             const cost = getItemCost(item);
@@ -771,7 +790,6 @@
             gameState.buildings.forEach(b => {
                 let buildingCPS = b.cps;
                 
-                // Aplica multiplicadores dos Boosts
                 gameState.boosts.forEach(boost => {
                     if (boost.targetId === b.id && boost.count > 0) {
                         buildingCPS *= boost.multiplier;
@@ -826,10 +844,15 @@
             return Number.isInteger(num) ? num : num.toFixed(1);
         }
 
-        // --- Save/Load ---
+        // --- Save/Load System ---
 
         function saveGame() {
-            const saveState = { ...gameState, clickHistory: [] };
+            // Salva o timestamp atual
+            const saveState = { 
+                ...gameState, 
+                clickHistory: [],
+                lastSaveTime: Date.now() // Importante para o cálculo offline
+            };
             localStorage.setItem('catClickerSave', JSON.stringify(saveState));
         }
 
@@ -841,39 +864,67 @@
                     gameState.score = parsed.score || 0;
                     gameState.totalScoreAccumulated = parsed.totalScoreAccumulated || 0;
                     
-                    // Recupera Buildings
                     if (parsed.buildings) {
                         parsed.buildings.forEach((savedB, index) => {
                             if (gameState.buildings[index]) gameState.buildings[index].count = savedB.count;
                         });
                     }
-                    
-                    // Recupera ClickItems
                     if (parsed.clickItems) {
                         parsed.clickItems.forEach((savedI, index) => {
                             const localItem = gameState.clickItems.find(i => i.id === savedI.id);
                             if (localItem) localItem.count = savedI.count;
                         });
                     }
-
-                    // Recupera Boosts (Novo)
                     if (parsed.boosts) {
                          parsed.boosts.forEach((savedBoost) => {
                             const localBoost = gameState.boosts.find(b => b.id === savedBoost.id);
                             if (localBoost) localBoost.count = savedBoost.count;
                          });
-                    } else {
-                        // Se for um save antigo sem boosts, inicializa
-                        gameState.boosts.forEach(b => b.count = 0);
                     }
 
+                    // Recalcula o CPS baseado no que foi carregado
                     recalculateCPS();
                     recalculateClickValue();
+                    
+                    // --- CÁLCULO DE GANHOS OFFLINE ---
+                    if (parsed.lastSaveTime) {
+                        const now = Date.now();
+                        const timeDiff = now - parsed.lastSaveTime;
+                        
+                        // Se passou mais de 10 segundos fora
+                        if (timeDiff > 10000 && gameState.cps > 0) {
+                            const secondsAway = Math.floor(timeDiff / 1000);
+                            const earnings = Math.floor(secondsAway * gameState.cps);
+                            
+                            if (earnings > 0) {
+                                addScore(earnings);
+                                showOfflineEarnings(secondsAway, earnings);
+                            }
+                        }
+                    }
                     
                 } catch (e) {
                     console.error("Save corrompido ou versão antiga.", e);
                 }
             }
+        }
+
+        function showOfflineEarnings(seconds, earnings) {
+            // Formata o tempo bonito (ex: 2h 30m)
+            let timeString = "";
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            
+            if (hours > 0) timeString += `${hours}h `;
+            if (minutes > 0) timeString += `${minutes}m `;
+            timeString += `${secs}s`;
+
+            elements.offlineTimeDisplay.textContent = timeString;
+            elements.offlineEarningsDisplay.textContent = `+${formatNumber(earnings)}`;
+            
+            // Mostra o modal
+            elements.offlineModal.classList.remove('hidden');
         }
 
         function performReset() {
