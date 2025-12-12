@@ -334,6 +334,21 @@
         .util-btn.danger { border-color: #883333; color: #cc6666; }
         .util-btn.danger:hover { background: var(--red); border-color: var(--red); color: white; }
 
+        /* Estilo específico para o botão de Reset no canto */
+        #reset-btn {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            font-size: 0.8rem;
+            padding: 8px 15px;
+            opacity: 0.6;
+            z-index: 100;
+        }
+        
+        #reset-btn:hover {
+            opacity: 1;
+        }
+
         #message-log {
             margin-top: 20px;
             font-size: 1rem;
@@ -398,9 +413,11 @@
             
             <div class="controls">
                 <button id="save-btn" class="util-btn">💾 Salvar</button>
-                <button id="reset-btn" class="util-btn danger">🗑️ Resetar</button>
             </div>
             <div id="message-log">Comece a fazer carinho no gato!</div>
+
+            <!-- Botão de Reset movido para cá (isolado) -->
+            <button id="reset-btn" class="util-btn danger">🗑️ Resetar</button>
         </section>
 
         <!-- Seção Direita: Pet Shop -->
@@ -482,11 +499,23 @@
             
             // Loops
             setInterval(gameLoop, 100); 
-            setInterval(saveGame, 30000); 
+
+            // --- SISTEMA DE SAVE AUTOMÁTICO ---
+            
+            // 1. Salva a cada 30 segundos com aviso visual
+            setInterval(() => {
+                saveGame();
+                showMessage("Jogo salvo automaticamente 💾"); 
+            }, 30000); 
+
+            // 2. Salva ao fechar a aba/janela ou atualizar (Camada extra de segurança)
+            window.addEventListener('beforeunload', () => {
+                saveGame();
+            });
             
             // Eventos
             elements.bigCat.addEventListener('click', handleCatClick);
-            elements.saveBtn.addEventListener('click', () => { saveGame(); showMessage("Progresso salvo! Miau!"); });
+            elements.saveBtn.addEventListener('click', () => { saveGame(); showMessage("Progresso salvo manualmente!"); });
             
             // Lógica do Modal de Reset
             elements.resetBtn.addEventListener('click', () => {
