@@ -538,19 +538,34 @@
         .util-btn.danger { border-color: #883333; color: #cc6666; }
         .util-btn.danger:hover { background: var(--red); border-color: var(--red); color: white; }
 
-        /* Estilo específico para o botão de Reset no canto */
-        #reset-btn {
+        /* PAINEL INFERIOR ESQUERDO (Stats, Conquistas, Reset) */
+        .bottom-left-panel {
             position: absolute;
             bottom: 15px;
             left: 15px;
-            font-size: 0.8rem;
-            padding: 8px 15px;
-            opacity: 0.6;
+            display: flex;
+            gap: 8px;
             z-index: 100;
         }
-        
-        #reset-btn:hover {
+
+        .bottom-left-panel .util-btn {
+            font-size: 0.8rem;
+            padding: 8px 12px;
+            opacity: 0.6;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+        }
+
+        .bottom-left-panel .util-btn:hover {
             opacity: 1;
+            background: rgba(255,255,255,0.1);
+            border-color: #777;
+        }
+        
+        /* Estilo específico para destacar o perigo do reset mesmo no painel */
+        .bottom-left-panel .util-btn.danger:hover {
+            background: var(--red);
+            border-color: var(--red);
         }
 
         #message-log {
@@ -666,13 +681,15 @@
             
             <div class="controls">
                 <button id="save-btn" class="util-btn">💾 Salvar</button>
-                <button id="stats-btn" class="util-btn">📊 Stats</button>
-                <button id="achievements-btn" class="util-btn">🏆</button>
             </div>
             <div id="message-log">Comece a fazer carinho no gato!</div>
 
-            <!-- Botão de Reset -->
-            <button id="reset-btn" class="util-btn danger">🗑️ Resetar</button>
+            <!-- Painel Inferior Esquerdo -->
+            <div class="bottom-left-panel">
+                <button id="stats-btn" class="util-btn">📊 Stats</button>
+                <button id="achievements-btn" class="util-btn">🏆 Conquistas</button>
+                <button id="reset-btn" class="util-btn danger">🗑️ Resetar</button>
+            </div>
         </section>
 
         <!-- Seção Direita: Pet Shop -->
