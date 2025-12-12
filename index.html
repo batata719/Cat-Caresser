@@ -211,7 +211,6 @@
             filter: drop-shadow(0 0 25px rgba(0,0,0,0.6));
             transition: transform 0.05s;
             line-height: 1;
-            /* Removemos flexbox e width/height fixos da imagem */
         }
 
         .cat-clicker:active {
@@ -250,6 +249,73 @@
             padding-bottom: 0.5rem;
             color: var(--accent-color);
             font-family: 'Fredoka One', cursive;
+        }
+
+        /* --- CONTROLES DE COMPRA/VENDA --- */
+        .mode-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            padding: 0 5px;
+        }
+
+        .mode-btn {
+            background: none;
+            border: none;
+            color: #777;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            padding-bottom: 2px;
+            font-family: 'Fredoka One', cursive;
+            transition: 0.2s;
+        }
+
+        .mode-btn:hover { color: #aaa; }
+        
+        .mode-btn.active {
+            color: #fff;
+            border-bottom: 2px solid #fff;
+        }
+
+        .mode-btn.sell-active {
+            color: var(--red);
+            border-bottom: 2px solid var(--red);
+        }
+
+        /* --- CONTROLE DE MULTIPLICADOR --- */
+        .buy-controls {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 10px;
+            padding: 5px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+
+        .buy-multiplier {
+            background: transparent;
+            border: 1px solid #555;
+            color: #888;
+            padding: 2px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .buy-multiplier:hover {
+            border-color: #888;
+            color: #ccc;
+        }
+
+        .buy-multiplier.active {
+            background: var(--btn-bg);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
         }
 
         /* --- ABAS DA LOJA --- */
@@ -317,6 +383,15 @@
             border-color: rgba(255, 204, 0, 0.3);
         }
 
+        /* Estilo para modo Venda */
+        .upgrade-item.sell-mode {
+            border-color: rgba(255, 69, 58, 0.3);
+        }
+        .upgrade-item.sell-mode:hover {
+            background-color: #452b2b;
+            border-color: var(--red);
+        }
+
         .upgrade-item.disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -342,6 +417,10 @@
         
         /* Texto roxo para custos de acessórios */
         .upgrade-cost.rare { color: var(--purple); }
+        /* Texto verde para reembolso (venda) */
+        .upgrade-cost.refund { color: var(--green); }
+        /* Texto vermelho para custo normal */
+        .upgrade-cost.price { color: var(--red); }
 
         .controls { margin-top: 2rem; display: flex; gap: 10px; }
         
@@ -414,7 +493,6 @@
 
     <!-- MODAL DE ONLINE/OFFLINE -->
     <div id="offline-modal" class="modal-overlay hidden">
-        <!-- Adicionei a classe offline-theme aqui -->
         <div class="modal offline-theme">
             <h3>Bem-vindo de volta! 🌙</h3>
             <p>Seus gatos continuaram ronronando enquanto você estava fora.</p>
@@ -454,7 +532,7 @@
             </div>
 
             <div class="clicker-container">
-                <!-- O Gato Gigante (Voltou a ser Emoji) -->
+                <!-- O Gato Gigante (Emoji) -->
                 <div id="big-cat" class="cat-clicker">🐱</div>
             </div>
             
@@ -470,6 +548,21 @@
         <!-- Seção Direita: Pet Shop -->
         <section class="store-section">
             <h2>Pet Shop</h2>
+
+            <!-- CONTROLE DE MODO (COMPRAR / VENDER) -->
+            <div class="mode-controls">
+                <button id="btn-mode-buy" class="mode-btn active" onclick="setSellMode(false)">Comprar</button>
+                <button id="btn-mode-sell" class="mode-btn" onclick="setSellMode(true)">Vender</button>
+            </div>
+
+            <!-- CONTROLE DE MULTIPLICADOR DE COMPRA -->
+            <div class="buy-controls">
+                <button class="buy-multiplier active" onclick="setBuyMultiplier(1)">1x</button>
+                <button class="buy-multiplier" onclick="setBuyMultiplier(5)">5x</button>
+                <button class="buy-multiplier" onclick="setBuyMultiplier(10)">10x</button>
+                <button class="buy-multiplier" onclick="setBuyMultiplier('MAX')">Máx</button>
+            </div>
+
             <!-- Abas de Navegação -->
             <div class="store-tabs">
                 <button id="tab-buildings" class="tab-btn active">Ronronadores</button>
@@ -490,8 +583,10 @@
             cps: 0,
             clickValue: 1,
             activeTab: 'buildings',
+            buyMultiplier: 1, // 1, 5, 10 ou 'MAX'
+            sellMode: false, // Novo estado: Modo de Venda
             clickHistory: [], 
-            lastSaveTime: Date.now(), // Novo campo para rastrear tempo
+            lastSaveTime: Date.now(),
             
             buildings: [
                 { id: 0, name: "Petisco", baseCost: 15, cps: 0.1, count: 0, icon: "🐟" },
@@ -548,7 +643,11 @@
             // Abas
             tabBuildings: document.getElementById('tab-buildings'),
             tabUpgrades: document.getElementById('tab-upgrades'),
-            tabBoosts: document.getElementById('tab-boosts')
+            tabBoosts: document.getElementById('tab-boosts'),
+            // Multiplicadores e Modos
+            multiplierBtns: document.querySelectorAll('.buy-multiplier'),
+            btnModeBuy: document.getElementById('btn-mode-buy'),
+            btnModeSell: document.getElementById('btn-mode-sell')
         };
 
         // --- Funções Principais ---
@@ -601,6 +700,38 @@
 
         function startGame() {
             elements.startScreen.classList.add('hidden');
+        }
+
+        // --- Função para Alternar Modo (Comprar/Vender) ---
+        function setSellMode(isSell) {
+            gameState.sellMode = isSell;
+            
+            if (isSell) {
+                elements.btnModeBuy.classList.remove('active');
+                elements.btnModeSell.classList.add('sell-active');
+            } else {
+                elements.btnModeBuy.classList.add('active');
+                elements.btnModeSell.classList.remove('sell-active');
+            }
+            renderStore();
+        }
+
+        function setBuyMultiplier(value) {
+            gameState.buyMultiplier = value;
+            
+            // Atualiza visual dos botões
+            elements.multiplierBtns.forEach(btn => {
+                if (
+                    (value === 'MAX' && btn.textContent === 'Máx') ||
+                    (parseInt(btn.textContent) === value)
+                ) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            renderStore();
         }
 
         function switchTab(tabName) {
@@ -676,29 +807,101 @@
             activeList.forEach(item => {
                 const btn = document.getElementById(`btn-item-${item.id}`);
                 if (btn) {
-                    if (gameState.activeTab === 'boosts' && item.count > 0) {
-                        return; 
+                    if (gameState.activeTab === 'boosts') {
+                         if (item.count > 0) {
+                             btn.classList.add('purchased'); // Garante que visual de comprado persista
+                             return; 
+                         }
                     }
 
-                    const cost = getItemCost(item);
-                    
-                    if (gameState.score >= cost) {
-                        btn.classList.remove('disabled');
+                    // Lógica para Habilitar/Desabilitar
+                    if (gameState.sellMode && gameState.activeTab !== 'boosts') {
+                         // No modo venda, habilita se tiver itens para vender
+                         // Boosts não podem ser vendidos
+                         const { refundAmount, count } = getBulkRefund(item, gameState.buyMultiplier);
+                         
+                         // Se tiver count > 0 pra vender (baseado no multiplicador)
+                         // Para MAX, se count for > 0 habilita. Para fixo, se tiver o suficiente.
+                         if (count > 0) {
+                             btn.classList.remove('disabled');
+                         } else {
+                             btn.classList.add('disabled');
+                         }
+
                     } else {
-                        btn.classList.add('disabled');
+                        // Modo Compra
+                        if (gameState.activeTab === 'boosts') {
+                            const cost = item.baseCost;
+                            if (gameState.score >= cost) btn.classList.remove('disabled');
+                            else btn.classList.add('disabled');
+                        } else {
+                            const { totalCost } = getBulkCost(item, gameState.buyMultiplier);
+                            if (gameState.score >= totalCost) btn.classList.remove('disabled');
+                            else btn.classList.add('disabled');
+                        }
                     }
                 }
             });
         }
 
-        // --- Loja ---
+        // --- Lógica de Compra e Venda em Lote ---
 
-        function getItemCost(item) {
-            if (item.targetId !== undefined) {
-                return item.baseCost;
+        function getBulkCost(item, multiplier) {
+            let totalCost = 0;
+            let count = 0;
+            
+            let tempScore = gameState.score;
+            let tempCount = item.count;
+
+            if (multiplier === 'MAX') {
+                while (count < 1000) {
+                    let nextPrice = Math.floor(item.baseCost * Math.pow(1.15, tempCount));
+                    if (tempScore >= nextPrice) {
+                        totalCost += nextPrice;
+                        tempScore -= nextPrice;
+                        tempCount++;
+                        count++;
+                    } else {
+                        break;
+                    }
+                }
+                if (count === 0) {
+                    totalCost = Math.floor(item.baseCost * Math.pow(1.15, item.count));
+                }
+            } else {
+                count = multiplier;
+                for (let i = 0; i < count; i++) {
+                    totalCost += Math.floor(item.baseCost * Math.pow(1.15, tempCount + i));
+                }
             }
-            return Math.floor(item.baseCost * Math.pow(1.15, item.count));
+            
+            return { totalCost, count };
         }
+
+        function getBulkRefund(item, multiplier) {
+            // Reembolso é 50% do custo de compra do item específico
+            let refundAmount = 0;
+            let count = 0;
+            
+            // Se pedir pra vender 10 mas só tem 5, vende 5
+            let itemsToSell = (multiplier === 'MAX') ? item.count : Math.min(item.count, multiplier);
+            count = itemsToSell;
+
+            // Calcula reembolso do último comprado para baixo
+            // Custo do N-ésimo item = Base * 1.15^(N-1)
+            let tempCount = item.count; 
+            
+            for (let i = 0; i < itemsToSell; i++) {
+                let originalCost = Math.floor(item.baseCost * Math.pow(1.15, tempCount - 1));
+                refundAmount += Math.floor(originalCost * 0.5);
+                tempCount--;
+            }
+
+            return { refundAmount, count };
+        }
+
+
+        // --- Renderização da Loja ---
 
         function renderStore() {
             elements.storeContainer.innerHTML = "";
@@ -709,12 +912,16 @@
             else listToRender = gameState.boosts;
             
             listToRender.forEach(item => {
-                const cost = getItemCost(item);
                 const isBoost = item.targetId !== undefined; 
                 const isOwned = isBoost && item.count > 0;
 
                 const div = document.createElement('div');
                 div.className = 'upgrade-item disabled';
+                
+                // Aplica classe de venda se estiver no modo venda e não for boost
+                if (gameState.sellMode && !isBoost) {
+                    div.classList.add('sell-mode');
+                }
                 
                 if (isOwned) {
                     div.classList.add('purchased');
@@ -722,13 +929,49 @@
                 }
 
                 div.id = `btn-item-${item.id}`;
-                if (!isOwned) {
-                    div.onclick = () => buyItem(item.id);
+                // Clique: Se for boost e já tiver, não faz nada. Senão, chama handler
+                if (!isOwned || (gameState.sellMode && !isBoost)) {
+                    div.onclick = () => handleStoreItemClick(item.id);
                 }
                 
                 let benefitText = "";
-                let costText = `🧶 ${formatNumber(cost)}`;
+                let costText = "";
                 let countText = item.count;
+
+                // --- Renderização no MODO VENDA ---
+                if (gameState.sellMode && !isBoost) {
+                    const { refundAmount, count } = getBulkRefund(item, gameState.buyMultiplier);
+                    costText = `<span class="upgrade-cost refund">+${formatNumber(refundAmount)}</span>`;
+                    
+                    if (count > 0) {
+                         costText += ` (Vender ${count})`;
+                    } else {
+                         costText = `<span style="color:#777">Vazio</span>`;
+                    }
+                    
+                } 
+                // --- Renderização no MODO COMPRA ---
+                else {
+                    if (isBoost) {
+                        costText = isOwned ? "COMPRADO" : `<span class="upgrade-cost rare">🔮 ${formatNumber(item.baseCost)}</span>`;
+                        countText = isOwned ? "✔" : "";
+                    } else {
+                        const { totalCost, count } = getBulkCost(item, gameState.buyMultiplier);
+                        // Custo em vermelho por padrão (será cinza se disabled pelo CSS)
+                        // ou verde se tiver dinheiro (mas aqui usamos cor padrão do CSS, a classe price força vermelho se quisermos)
+                        costText = `🧶 ${formatNumber(totalCost)}`;
+                        
+                        if (gameState.buyMultiplier === 'MAX') {
+                            if (count > 0) {
+                                costText += ` (+${count})`;
+                            } else {
+                                costText += ` (1)`; 
+                            }
+                        } else if (gameState.buyMultiplier > 1) {
+                            costText += ` (x${gameState.buyMultiplier})`;
+                        }
+                    }
+                }
 
                 if (gameState.activeTab === 'buildings') {
                     benefitText = `+${formatNumber(item.cps)} CPS`;
@@ -736,12 +979,6 @@
                     benefitText = `+${formatNumber(item.clickIncrease)} / carinho`;
                 } else {
                     benefitText = item.desc;
-                    costText = `<span class="upgrade-cost rare">🔮 ${formatNumber(cost)}</span>`;
-                    countText = isOwned ? "✔" : "";
-                }
-                
-                if (isOwned) {
-                    costText = "COMPRADO";
                 }
                 
                 div.innerHTML = `
@@ -758,9 +995,9 @@
             });
         }
 
-        function buyItem(id) {
+        // Função unificada de clique na loja
+        function handleStoreItemClick(id) {
             let item, type;
-
             item = gameState.buildings.find(b => b.id === id);
             type = 'building';
             
@@ -772,18 +1009,56 @@
                 item = gameState.boosts.find(b => b.id === id);
                 type = 'boost';
             }
-
             if (!item) return;
 
-            if (type === 'boost' && item.count > 0) return;
+            // Se estiver no modo Venda e não for Boost, vende
+            if (gameState.sellMode && type !== 'boost') {
+                sellItem(item, type);
+            } else {
+                buyItem(item, type);
+            }
+        }
 
-            const cost = getItemCost(item);
+        function sellItem(item, type) {
+            if (item.count <= 0) return;
 
-            if (gameState.score >= cost) {
-                gameState.score -= cost;
-                item.count++;
+            const { refundAmount, count } = getBulkRefund(item, gameState.buyMultiplier);
+            
+            if (count > 0) {
+                item.count -= count;
+                gameState.score += refundAmount; // Devolve dinheiro
                 
-                if (type === 'building' || type === 'boost') {
+                if (type === 'building') recalculateCPS();
+                else recalculateClickValue();
+                
+                renderStore();
+                showMessage(`Vendido ${count}x ${item.name}!`);
+            }
+        }
+
+        function buyItem(item, type) {
+            if (type === 'boost') {
+                if (item.count > 0) return;
+                const cost = item.baseCost;
+                if (gameState.score >= cost) {
+                    gameState.score -= cost;
+                    item.count++;
+                    recalculateCPS();
+                    renderStore();
+                    showMessage(`Acessório comprado!`);
+                }
+                return;
+            }
+
+            const { totalCost, count } = getBulkCost(item, gameState.buyMultiplier);
+
+            if (gameState.buyMultiplier === 'MAX' && count === 0) return;
+
+            if (gameState.score >= totalCost) {
+                gameState.score -= totalCost;
+                item.count += count;
+                
+                if (type === 'building') {
                     recalculateCPS();
                 } else {
                     recalculateClickValue();
@@ -792,7 +1067,7 @@
                 renderStore(); 
                 
                 const msgs = ["Boa escolha!", "Miau!", "Ronronando...", "Delícia!", "Poder Felino!"];
-                showMessage(`${item.name} comprado! ${msgs[Math.floor(Math.random()*msgs.length)]}`);
+                showMessage(`${count}x ${item.name} comprado! ${msgs[Math.floor(Math.random()*msgs.length)]}`);
             }
         }
 
