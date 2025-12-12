@@ -142,6 +142,16 @@
             animation: popIn 0.3s ease-out;
         }
 
+        /* Estilo especial para o modal Offline */
+        .modal.offline-theme {
+            border-color: var(--purple);
+            box-shadow: 0 0 40px rgba(191, 90, 242, 0.3);
+        }
+        
+        .modal.offline-theme h3 {
+            color: var(--purple);
+        }
+
         .modal h3 { margin-bottom: 1rem; color: var(--accent-color); font-size: 1.5rem; font-family: 'Fredoka One', cursive; }
         .modal p { margin-bottom: 1.5rem; color: #ddd; line-height: 1.5; }
         .modal-buttons { display: flex; gap: 1rem; justify-content: center; }
@@ -404,18 +414,19 @@
 
     <!-- MODAL DE ONLINE/OFFLINE -->
     <div id="offline-modal" class="modal-overlay hidden">
-        <div class="modal">
+        <!-- Adicionei a classe offline-theme aqui -->
+        <div class="modal offline-theme">
             <h3>Bem-vindo de volta! 🌙</h3>
             <p>Seus gatos continuaram ronronando enquanto você estava fora.</p>
-            <div style="margin: 20px 0;">
-                <p style="font-size: 0.9rem; margin-bottom: 5px;">Você ficou fora por:</p>
-                <p id="offline-time" style="font-size: 1.1rem; color: #fff; font-weight: bold;">0s</p>
+            <div style="margin: 20px 0; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px;">
+                <p style="font-size: 0.9rem; margin-bottom: 5px; color: #aaa;">Você ficou fora por:</p>
+                <p id="offline-time" style="font-size: 1.2rem; color: #fff; font-weight: bold;">0s</p>
                 <br>
-                <p style="font-size: 0.9rem; margin-bottom: 5px;">Seus gatos geraram:</p>
-                <p id="offline-earnings" style="font-size: 2rem; color: var(--accent-color); font-weight: bold; text-shadow: 0 0 10px rgba(255,204,0,0.3);">+0</p>
+                <p style="font-size: 0.9rem; margin-bottom: 5px; color: #aaa;">Seus gatos geraram:</p>
+                <p id="offline-earnings" style="font-size: 2.5rem; color: var(--purple); font-weight: bold; text-shadow: 0 0 15px rgba(191, 90, 242, 0.4);">+0</p>
             </div>
             <div class="modal-buttons">
-                <button id="close-offline-btn" class="util-btn" style="background-color: var(--accent-color); color: #201a1e; border: none;">Coletar Ronrons</button>
+                <button id="close-offline-btn" class="util-btn" style="background-color: var(--purple); color: #fff; border: none; padding: 10px 30px; font-size: 1.1rem;">Coletar Ronrons</button>
             </div>
         </div>
     </div>
@@ -891,8 +902,8 @@
                         const now = Date.now();
                         const timeDiff = now - parsed.lastSaveTime;
                         
-                        // Se passou mais de 10 segundos fora
-                        if (timeDiff > 10000 && gameState.cps > 0) {
+                        // Reduzi para 5000ms (5 segundos) para facilitar o teste
+                        if (timeDiff > 5000 && gameState.cps > 0) {
                             const secondsAway = Math.floor(timeDiff / 1000);
                             const earnings = Math.floor(secondsAway * gameState.cps);
                             
