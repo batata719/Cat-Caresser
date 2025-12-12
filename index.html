@@ -14,6 +14,7 @@
             --btn-bg: #4a3b45;
             --green: #4cd964;
             --red: #ff453a;
+            --purple: #bf5af2; /* Cor para itens especiais */
         }
 
         * {
@@ -260,6 +261,7 @@
             border-radius: 5px;
             transition: 0.2s;
             font-family: 'Roboto', sans-serif;
+            font-size: 0.85rem;
         }
 
         .tab-btn:hover {
@@ -310,10 +312,24 @@
             box-shadow: none;
         }
 
+        /* Estilo especial para itens comprados (Boosts) */
+        .upgrade-item.purchased {
+            background-color: #2a3c2a;
+            border-color: var(--green);
+            opacity: 0.8;
+            cursor: default;
+        }
+        .upgrade-item.purchased:hover {
+            transform: none;
+        }
+
         .upgrade-info h3 { font-size: 1.1rem; margin-bottom: 4px; font-weight: bold; }
         .upgrade-info p { font-size: 0.9rem; color: #aaa; }
         .upgrade-cost { font-weight: bold; color: var(--green); }
         .upgrade-count { font-size: 1.8rem; font-weight: bold; color: rgba(255,255,255,0.15); min-width: 40px; text-align: center;}
+        
+        /* Texto roxo para custos de acessórios */
+        .upgrade-cost.rare { color: var(--purple); }
 
         .controls { margin-top: 2rem; display: flex; gap: 10px; }
         
@@ -427,6 +443,7 @@
             <div class="store-tabs">
                 <button id="tab-buildings" class="tab-btn active">Ronronadores</button>
                 <button id="tab-upgrades" class="tab-btn">Mimos</button>
+                <button id="tab-boosts" class="tab-btn">Acessórios</button>
             </div>
             <div id="store-container">
                 <!-- Os itens serão gerados pelo JavaScript aqui -->
@@ -441,7 +458,7 @@
             totalScoreAccumulated: 0,
             cps: 0,
             clickValue: 1,
-            activeTab: 'buildings', // 'buildings' ou 'upgrades'
+            activeTab: 'buildings', // 'buildings', 'upgrades', 'boosts'
             clickHistory: [], 
             
             // Edifícios que geram ronrons automáticos (CPS)
@@ -462,6 +479,17 @@
                 { id: 102, name: "Luva de Escovar", baseCost: 10000, clickIncrease: 15, count: 0, icon: "🧤" },
                 { id: 103, name: "Varinha Mágica", baseCost: 50000, clickIncrease: 50, count: 0, icon: "🪄" },
                 { id: 104, name: "Mão Robótica", baseCost: 200000, clickIncrease: 200, count: 0, icon: "🤖" }
+            ],
+
+            // Acessórios (Boosts) - Multiplicam produção de prédios específicos
+            boosts: [
+                { id: 200, name: "Salmão Fresco", baseCost: 1000, targetId: 0, multiplier: 2, count: 0, icon: "🍣", desc: "Petiscos geram 2x mais" },
+                { id: 201, name: "Papelão Reforçado", baseCost: 5000, targetId: 1, multiplier: 2, count: 0, icon: "📦", desc: "Caixas geram 2x mais" },
+                { id: 202, name: "Sisal Premium", baseCost: 11000, targetId: 2, multiplier: 2, count: 0, icon: "🧵", desc: "Arranhadores geram 2x mais" },
+                { id: 203, name: "Adubo Orgânico", baseCost: 120000, targetId: 3, multiplier: 2, count: 0, icon: "🌱", desc: "Catnip gera 2x mais" },
+                { id: 204, name: "Automação", baseCost: 1300000, targetId: 4, multiplier: 2, count: 0, icon: "⚙️", desc: "Fábricas geram 2x mais" },
+                { id: 205, name: "Ídolo Dourado", baseCost: 14000000, targetId: 5, multiplier: 2, count: 0, icon: "🗿", desc: "Santuários geram 2x mais" },
+                { id: 206, name: "Bandeira da Paz", baseCost: 200000000, targetId: 6, multiplier: 2, count: 0, icon: "🏳️", desc: "Planetas geram 2x mais" }
             ]
         };
 
@@ -485,7 +513,8 @@
             cancelResetBtn: document.getElementById('cancel-reset'),
             // Abas
             tabBuildings: document.getElementById('tab-buildings'),
-            tabUpgrades: document.getElementById('tab-upgrades')
+            tabUpgrades: document.getElementById('tab-upgrades'),
+            tabBoosts: document.getElementById('tab-boosts')
         };
 
         // --- Funções Principais ---
@@ -501,14 +530,11 @@
             setInterval(gameLoop, 100); 
 
             // --- SISTEMA DE SAVE AUTOMÁTICO ---
-            
-            // 1. Salva a cada 30 segundos com aviso visual
             setInterval(() => {
                 saveGame();
                 showMessage("Jogo salvo automaticamente 💾"); 
             }, 30000); 
 
-            // 2. Salva ao fechar a aba/janela ou atualizar (Camada extra de segurança)
             window.addEventListener('beforeunload', () => {
                 saveGame();
             });
@@ -535,6 +561,7 @@
             // Eventos das Abas
             elements.tabBuildings.addEventListener('click', () => switchTab('buildings'));
             elements.tabUpgrades.addEventListener('click', () => switchTab('upgrades'));
+            elements.tabBoosts.addEventListener('click', () => switchTab('boosts'));
         }
 
         function startGame() {
@@ -548,12 +575,16 @@
         }
 
         function updateTabVisuals() {
+            elements.tabBuildings.classList.remove('active');
+            elements.tabUpgrades.classList.remove('active');
+            elements.tabBoosts.classList.remove('active');
+
             if (gameState.activeTab === 'buildings') {
                 elements.tabBuildings.classList.add('active');
-                elements.tabUpgrades.classList.remove('active');
-            } else {
-                elements.tabBuildings.classList.remove('active');
+            } else if (gameState.activeTab === 'upgrades') {
                 elements.tabUpgrades.classList.add('active');
+            } else {
+                elements.tabBoosts.classList.add('active');
             }
         }
 
@@ -564,7 +595,6 @@
 
             const msgs = ["+1", "Miau!", "Prrr", "❤️"];
             const text = msgs[Math.floor(Math.random() * msgs.length)];
-            // Se a mensagem for +1, mostramos o valor real do clique
             const displayText = text === "+1" ? `+${formatNumber(gameState.clickValue)}` : text;
             
             createParticles(e.clientX, e.clientY, displayText);
@@ -603,12 +633,19 @@
             elements.title.textContent = `${formatNumber(Math.floor(gameState.score))} Ronrons - Gatos`;
 
             // Atualiza botões da loja
-            const activeList = gameState.activeTab === 'buildings' ? gameState.buildings : gameState.clickItems;
+            let activeList;
+            if (gameState.activeTab === 'buildings') activeList = gameState.buildings;
+            else if (gameState.activeTab === 'upgrades') activeList = gameState.clickItems;
+            else activeList = gameState.boosts;
             
             activeList.forEach(item => {
                 const btn = document.getElementById(`btn-item-${item.id}`);
-                // Verifica se o botão existe (pode não existir se mudarmos de aba muito rápido)
                 if (btn) {
+                    // Para Boosts comprados, mantemos o visual de "Comprado"
+                    if (gameState.activeTab === 'boosts' && item.count > 0) {
+                        return; // Não mexe no estilo se já comprou
+                    }
+
                     const cost = getItemCost(item);
                     
                     if (gameState.score >= cost) {
@@ -623,38 +660,66 @@
         // --- Loja ---
 
         function getItemCost(item) {
+            // Boosts não aumentam de preço (compra única)
+            if (item.targetId !== undefined) {
+                return item.baseCost;
+            }
             return Math.floor(item.baseCost * Math.pow(1.15, item.count));
         }
 
         function renderStore() {
             elements.storeContainer.innerHTML = "";
             
-            const listToRender = gameState.activeTab === 'buildings' ? gameState.buildings : gameState.clickItems;
+            let listToRender;
+            if (gameState.activeTab === 'buildings') listToRender = gameState.buildings;
+            else if (gameState.activeTab === 'upgrades') listToRender = gameState.clickItems;
+            else listToRender = gameState.boosts;
             
             listToRender.forEach(item => {
                 const cost = getItemCost(item);
-                
+                const isBoost = item.targetId !== undefined; // Verifica se é um boost
+                const isOwned = isBoost && item.count > 0;
+
                 const div = document.createElement('div');
                 div.className = 'upgrade-item disabled';
-                div.id = `btn-item-${item.id}`;
-                div.onclick = () => buyItem(item.id);
                 
-                // Texto de benefício diferente para cada tipo
+                if (isOwned) {
+                    div.classList.add('purchased');
+                    div.classList.remove('disabled'); // Remove disabled visual padrão pra aplicar o de purchased
+                }
+
+                div.id = `btn-item-${item.id}`;
+                if (!isOwned) {
+                    div.onclick = () => buyItem(item.id);
+                }
+                
+                // Texto de benefício
                 let benefitText = "";
+                let costText = `🧶 ${formatNumber(cost)}`;
+                let countText = item.count;
+
                 if (gameState.activeTab === 'buildings') {
                     benefitText = `+${formatNumber(item.cps)} CPS`;
-                } else {
+                } else if (gameState.activeTab === 'upgrades') {
                     benefitText = `+${formatNumber(item.clickIncrease)} / carinho`;
+                } else {
+                    benefitText = item.desc;
+                    costText = `<span class="upgrade-cost rare">🔮 ${formatNumber(cost)}</span>`;
+                    countText = isOwned ? "✔" : "";
+                }
+                
+                if (isOwned) {
+                    costText = "COMPRADO";
                 }
                 
                 div.innerHTML = `
                     <div class="upgrade-icon" style="font-size: 2rem; margin-right: 15px;">${item.icon}</div>
                     <div class="upgrade-info" style="flex: 1;">
                         <h3>${item.name}</h3>
-                        <p class="upgrade-cost">🧶 ${formatNumber(cost)}</p>
+                        <p class="upgrade-cost">${costText}</p>
                         <p style="font-size: 0.8rem; margin-top: 2px;">${benefitText}</p>
                     </div>
-                    <div class="upgrade-count" id="count-item-${item.id}">${item.count}</div>
+                    <div class="upgrade-count" id="count-item-${item.id}">${countText}</div>
                 `;
                 
                 elements.storeContainer.appendChild(div);
@@ -662,16 +727,25 @@
         }
 
         function buyItem(id) {
-            // Procura o item nas duas listas (seguro)
-            let item = gameState.buildings.find(b => b.id === id);
-            let type = 'building';
+            let item, type;
+
+            // Identifica o tipo de item baseado na aba ativa ou busca geral
+            item = gameState.buildings.find(b => b.id === id);
+            type = 'building';
             
             if (!item) {
                 item = gameState.clickItems.find(b => b.id === id);
                 type = 'upgrade';
             }
+            if (!item) {
+                item = gameState.boosts.find(b => b.id === id);
+                type = 'boost';
+            }
 
-            if (!item) return; // Erro de segurança
+            if (!item) return;
+
+            // Impede recompra de boost
+            if (type === 'boost' && item.count > 0) return;
 
             const cost = getItemCost(item);
 
@@ -679,16 +753,15 @@
                 gameState.score -= cost;
                 item.count++;
                 
-                if (type === 'building') {
+                if (type === 'building' || type === 'boost') {
                     recalculateCPS();
                 } else {
                     recalculateClickValue();
                 }
                 
-                // Atualiza visual
                 renderStore(); 
                 
-                const msgs = ["Boa escolha!", "Miau!", "Ronronando...", "Delícia!"];
+                const msgs = ["Boa escolha!", "Miau!", "Ronronando...", "Delícia!", "Poder Felino!"];
                 showMessage(`${item.name} comprado! ${msgs[Math.floor(Math.random()*msgs.length)]}`);
             }
         }
@@ -696,13 +769,22 @@
         function recalculateCPS() {
             let cps = 0;
             gameState.buildings.forEach(b => {
-                cps += b.count * b.cps;
+                let buildingCPS = b.cps;
+                
+                // Aplica multiplicadores dos Boosts
+                gameState.boosts.forEach(boost => {
+                    if (boost.targetId === b.id && boost.count > 0) {
+                        buildingCPS *= boost.multiplier;
+                    }
+                });
+
+                cps += b.count * buildingCPS;
             });
             gameState.cps = cps;
         }
 
         function recalculateClickValue() {
-            let clickVal = 1; // Valor base
+            let clickVal = 1; 
             gameState.clickItems.forEach(item => {
                 clickVal += item.count * item.clickIncrease;
             });
@@ -762,21 +844,27 @@
                     // Recupera Buildings
                     if (parsed.buildings) {
                         parsed.buildings.forEach((savedB, index) => {
-                            if (gameState.buildings[index]) {
-                                gameState.buildings[index].count = savedB.count;
-                            }
+                            if (gameState.buildings[index]) gameState.buildings[index].count = savedB.count;
                         });
                     }
                     
-                    // Recupera ClickItems (novo!)
+                    // Recupera ClickItems
                     if (parsed.clickItems) {
                         parsed.clickItems.forEach((savedI, index) => {
-                             // Busca pelo ID para garantir compatibilidade futura
                             const localItem = gameState.clickItems.find(i => i.id === savedI.id);
-                            if (localItem) {
-                                localItem.count = savedI.count;
-                            }
+                            if (localItem) localItem.count = savedI.count;
                         });
+                    }
+
+                    // Recupera Boosts (Novo)
+                    if (parsed.boosts) {
+                         parsed.boosts.forEach((savedBoost) => {
+                            const localBoost = gameState.boosts.find(b => b.id === savedBoost.id);
+                            if (localBoost) localBoost.count = savedBoost.count;
+                         });
+                    } else {
+                        // Se for um save antigo sem boosts, inicializa
+                        gameState.boosts.forEach(b => b.count = 0);
                     }
 
                     recalculateCPS();
