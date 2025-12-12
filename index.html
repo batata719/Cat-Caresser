@@ -182,6 +182,12 @@
             margin-top: 5px;
         }
 
+        #click-power-display {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: 2px;
+        }
+
         .clicker-container {
             position: relative;
             cursor: pointer;
@@ -231,6 +237,40 @@
             padding-bottom: 0.5rem;
             color: var(--accent-color);
             font-family: 'Fredoka One', cursive;
+        }
+
+        /* --- ABAS DA LOJA --- */
+        .store-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            background-color: #222;
+            padding: 3px;
+            border-radius: 8px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            background: transparent;
+            color: #888;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: 0.2s;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .tab-btn:hover {
+            background-color: rgba(255,255,255,0.05);
+            color: #ccc;
+        }
+
+        .tab-btn.active {
+            background-color: var(--btn-bg);
+            color: var(--accent-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         #store-container {
@@ -348,6 +388,7 @@
             <div class="stats-header">
                 <h1 id="score-display">0 Ronrons</h1>
                 <p id="cps-display">por segundo: 0.0</p>
+                <p id="click-power-display">poder de carinho: 1</p>
             </div>
 
             <div class="clicker-container">
@@ -365,6 +406,11 @@
         <!-- Seção Direita: Pet Shop -->
         <section class="store-section">
             <h2>Pet Shop</h2>
+            <!-- Abas de Navegação -->
+            <div class="store-tabs">
+                <button id="tab-buildings" class="tab-btn active">Ronronadores</button>
+                <button id="tab-upgrades" class="tab-btn">Mimos</button>
+            </div>
             <div id="store-container">
                 <!-- Os itens serão gerados pelo JavaScript aqui -->
             </div>
@@ -378,8 +424,10 @@
             totalScoreAccumulated: 0,
             cps: 0,
             clickValue: 1,
-            // Lista para guardar timestamps dos cliques (para calcular CPS do jogador)
+            activeTab: 'buildings', // 'buildings' ou 'upgrades'
             clickHistory: [], 
+            
+            // Edifícios que geram ronrons automáticos (CPS)
             buildings: [
                 { id: 0, name: "Petisco", baseCost: 15, cps: 0.1, count: 0, icon: "🐟" },
                 { id: 1, name: "Caixa de Papelão", baseCost: 100, cps: 1, count: 0, icon: "📦" },
@@ -388,6 +436,15 @@
                 { id: 4, name: "Fábrica de Sachê", baseCost: 130000, cps: 260, count: 0, icon: "🏭" },
                 { id: 5, name: "Santuário Felino", baseCost: 1400000, cps: 1400, count: 0, icon: "⛩️" },
                 { id: 6, name: "Planeta dos Gatos", baseCost: 20000000, cps: 7800, count: 0, icon: "🪐" }
+            ],
+
+            // Itens que melhoram o clique manual (Click Value)
+            clickItems: [
+                { id: 100, name: "Unha Postiça", baseCost: 500, clickIncrease: 1, count: 0, icon: "💅" },
+                { id: 101, name: "Laser Pointer", baseCost: 2500, clickIncrease: 5, count: 0, icon: "🔦" },
+                { id: 102, name: "Luva de Escovar", baseCost: 10000, clickIncrease: 15, count: 0, icon: "🧤" },
+                { id: 103, name: "Varinha Mágica", baseCost: 50000, clickIncrease: 50, count: 0, icon: "🪄" },
+                { id: 104, name: "Mão Robótica", baseCost: 200000, clickIncrease: 200, count: 0, icon: "🤖" }
             ]
         };
 
@@ -395,6 +452,7 @@
         const elements = {
             scoreDisplay: document.getElementById('score-display'),
             cpsDisplay: document.getElementById('cps-display'),
+            clickPowerDisplay: document.getElementById('click-power-display'),
             bigCat: document.getElementById('big-cat'),
             storeContainer: document.getElementById('store-container'),
             msgLog: document.getElementById('message-log'),
@@ -407,13 +465,19 @@
             // Modal Reset
             resetModal: document.getElementById('reset-modal'),
             confirmResetBtn: document.getElementById('confirm-reset'),
-            cancelResetBtn: document.getElementById('cancel-reset')
+            cancelResetBtn: document.getElementById('cancel-reset'),
+            // Abas
+            tabBuildings: document.getElementById('tab-buildings'),
+            tabUpgrades: document.getElementById('tab-upgrades')
         };
 
         // --- Funções Principais ---
 
         function init() {
             loadGame();
+            
+            // Garantir que a aba ativa visualmente corresponda ao estado
+            updateTabVisuals();
             renderStore();
             
             // Loops
@@ -438,22 +502,43 @@
             
             // Evento da Tela Inicial
             elements.startBtn.addEventListener('click', startGame);
+
+            // Eventos das Abas
+            elements.tabBuildings.addEventListener('click', () => switchTab('buildings'));
+            elements.tabUpgrades.addEventListener('click', () => switchTab('upgrades'));
         }
 
         function startGame() {
             elements.startScreen.classList.add('hidden');
         }
 
+        function switchTab(tabName) {
+            gameState.activeTab = tabName;
+            updateTabVisuals();
+            renderStore();
+        }
+
+        function updateTabVisuals() {
+            if (gameState.activeTab === 'buildings') {
+                elements.tabBuildings.classList.add('active');
+                elements.tabUpgrades.classList.remove('active');
+            } else {
+                elements.tabBuildings.classList.remove('active');
+                elements.tabUpgrades.classList.add('active');
+            }
+        }
+
         function handleCatClick(e) {
             addScore(gameState.clickValue);
             
-            // Registra o timestamp deste clique para o cálculo de CPS
             gameState.clickHistory.push(Date.now());
 
-            // Efeito visual aleatório
             const msgs = ["+1", "Miau!", "Prrr", "❤️"];
             const text = msgs[Math.floor(Math.random() * msgs.length)];
-            createParticles(e.clientX, e.clientY, text === "+1" ? `+${formatNumber(gameState.clickValue)}` : text);
+            // Se a mensagem for +1, mostramos o valor real do clique
+            const displayText = text === "+1" ? `+${formatNumber(gameState.clickValue)}` : text;
+            
+            createParticles(e.clientX, e.clientY, displayText);
         }
 
         function gameLoop() {
@@ -470,18 +555,16 @@
         }
 
         function updateUI() {
-            // Cálcula CPS do Jogador (cliques nos últimos 1000ms)
+            // CPS do Jogador
             const now = Date.now();
-            // Mantém apenas os cliques do último segundo
             gameState.clickHistory = gameState.clickHistory.filter(timestamp => now - timestamp <= 1000);
             
             const playerCPS = gameState.clickHistory.length * gameState.clickValue;
             const totalCPS = gameState.cps + playerCPS;
 
             elements.scoreDisplay.textContent = `${formatNumber(Math.floor(gameState.score))} Ronrons`;
+            elements.clickPowerDisplay.textContent = `poder de carinho: ${formatNumber(gameState.clickValue)}`;
             
-            // Exibe: Total (Auto + Clicks)
-            // Se o jogador não estiver clicando, mostra apenas o valor normal
             if (playerCPS > 0) {
                 elements.cpsDisplay.textContent = `por segundo: ${formatNumber(totalCPS.toFixed(1))} (Auto: ${formatNumber(gameState.cps.toFixed(1))})`;
             } else {
@@ -490,65 +573,94 @@
 
             elements.title.textContent = `${formatNumber(Math.floor(gameState.score))} Ronrons - Gatos`;
 
-            gameState.buildings.forEach(building => {
-                const btn = document.getElementById(`btn-building-${building.id}`);
-                const cost = getBuildingCost(building);
-                
-                if (gameState.score >= cost) {
-                    btn.classList.remove('disabled');
-                } else {
-                    btn.classList.add('disabled');
+            // Atualiza botões da loja
+            const activeList = gameState.activeTab === 'buildings' ? gameState.buildings : gameState.clickItems;
+            
+            activeList.forEach(item => {
+                const btn = document.getElementById(`btn-item-${item.id}`);
+                // Verifica se o botão existe (pode não existir se mudarmos de aba muito rápido)
+                if (btn) {
+                    const cost = getItemCost(item);
+                    
+                    if (gameState.score >= cost) {
+                        btn.classList.remove('disabled');
+                    } else {
+                        btn.classList.add('disabled');
+                    }
                 }
             });
         }
 
         // --- Loja ---
 
-        function getBuildingCost(building) {
-            return Math.floor(building.baseCost * Math.pow(1.15, building.count));
+        function getItemCost(item) {
+            return Math.floor(item.baseCost * Math.pow(1.15, item.count));
         }
 
         function renderStore() {
             elements.storeContainer.innerHTML = "";
             
-            gameState.buildings.forEach(building => {
-                const cost = getBuildingCost(building);
+            const listToRender = gameState.activeTab === 'buildings' ? gameState.buildings : gameState.clickItems;
+            
+            listToRender.forEach(item => {
+                const cost = getItemCost(item);
                 
-                const item = document.createElement('div');
-                item.className = 'upgrade-item disabled';
-                item.id = `btn-building-${building.id}`;
-                item.onclick = () => buyBuilding(building.id);
+                const div = document.createElement('div');
+                div.className = 'upgrade-item disabled';
+                div.id = `btn-item-${item.id}`;
+                div.onclick = () => buyItem(item.id);
                 
-                item.innerHTML = `
-                    <div class="upgrade-icon" style="font-size: 2rem; margin-right: 15px;">${building.icon}</div>
+                // Texto de benefício diferente para cada tipo
+                let benefitText = "";
+                if (gameState.activeTab === 'buildings') {
+                    benefitText = `+${formatNumber(item.cps)} CPS`;
+                } else {
+                    benefitText = `+${formatNumber(item.clickIncrease)} / carinho`;
+                }
+                
+                div.innerHTML = `
+                    <div class="upgrade-icon" style="font-size: 2rem; margin-right: 15px;">${item.icon}</div>
                     <div class="upgrade-info" style="flex: 1;">
-                        <h3>${building.name}</h3>
+                        <h3>${item.name}</h3>
                         <p class="upgrade-cost">🧶 ${formatNumber(cost)}</p>
-                        <p style="font-size: 0.8rem; margin-top: 2px;">+${formatNumber(building.cps)} CPS</p>
+                        <p style="font-size: 0.8rem; margin-top: 2px;">${benefitText}</p>
                     </div>
-                    <div class="upgrade-count" id="count-building-${building.id}">${building.count}</div>
+                    <div class="upgrade-count" id="count-item-${item.id}">${item.count}</div>
                 `;
                 
-                elements.storeContainer.appendChild(item);
+                elements.storeContainer.appendChild(div);
             });
         }
 
-        function buyBuilding(id) {
-            const building = gameState.buildings.find(b => b.id === id);
-            const cost = getBuildingCost(building);
+        function buyItem(id) {
+            // Procura o item nas duas listas (seguro)
+            let item = gameState.buildings.find(b => b.id === id);
+            let type = 'building';
+            
+            if (!item) {
+                item = gameState.clickItems.find(b => b.id === id);
+                type = 'upgrade';
+            }
+
+            if (!item) return; // Erro de segurança
+
+            const cost = getItemCost(item);
 
             if (gameState.score >= cost) {
                 gameState.score -= cost;
-                building.count++;
-                recalculateCPS();
+                item.count++;
                 
-                const countDisplay = document.getElementById(`count-building-${building.id}`);
-                countDisplay.textContent = building.count;
+                if (type === 'building') {
+                    recalculateCPS();
+                } else {
+                    recalculateClickValue();
+                }
                 
-                renderStore();
+                // Atualiza visual
+                renderStore(); 
                 
-                const msgs = ["Boa escolha!", "Os gatos amaram!", "Mais ronrons!", "Purr purr...", "Delícia!"];
-                showMessage(`${building.name} comprado! ${msgs[Math.floor(Math.random()*msgs.length)]}`);
+                const msgs = ["Boa escolha!", "Miau!", "Ronronando...", "Delícia!"];
+                showMessage(`${item.name} comprado! ${msgs[Math.floor(Math.random()*msgs.length)]}`);
             }
         }
 
@@ -558,6 +670,14 @@
                 cps += b.count * b.cps;
             });
             gameState.cps = cps;
+        }
+
+        function recalculateClickValue() {
+            let clickVal = 1; // Valor base
+            gameState.clickItems.forEach(item => {
+                clickVal += item.count * item.clickIncrease;
+            });
+            gameState.clickValue = clickVal;
         }
 
         // --- Efeitos ---
@@ -580,7 +700,6 @@
             elements.msgLog.textContent = msg;
             elements.msgLog.style.opacity = 1;
             
-            // Limpa o timeout anterior se existir, para não cortar a mensagem nova
             if (elements.msgLog.timeout) clearTimeout(elements.msgLog.timeout);
             
             elements.msgLog.timeout = setTimeout(() => {
@@ -589,21 +708,16 @@
         }
 
         function formatNumber(num) {
-            num = Number(num); // Garante que é tratado como número (importante quando vem de .toFixed que gera string)
-            
+            num = Number(num);
             if (num >= 1000000000) return (num / 1000000000).toFixed(2) + 'B';
             if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
-            
-            // CORREÇÃO: Se for número inteiro, mostra inteiro. 
-            // Se tiver casas decimais (ex: 0.1), mostra com 1 casa.
             return Number.isInteger(num) ? num : num.toFixed(1);
         }
 
         // --- Save/Load ---
 
         function saveGame() {
-            // O clickHistory não precisa ser salvo, pois é momentâneo
             const saveState = { ...gameState, clickHistory: [] };
             localStorage.setItem('catClickerSave', JSON.stringify(saveState));
         }
@@ -616,14 +730,31 @@
                     gameState.score = parsed.score || 0;
                     gameState.totalScoreAccumulated = parsed.totalScoreAccumulated || 0;
                     
-                    parsed.buildings.forEach((savedB, index) => {
-                        if (gameState.buildings[index]) {
-                            gameState.buildings[index].count = savedB.count;
-                        }
-                    });
+                    // Recupera Buildings
+                    if (parsed.buildings) {
+                        parsed.buildings.forEach((savedB, index) => {
+                            if (gameState.buildings[index]) {
+                                gameState.buildings[index].count = savedB.count;
+                            }
+                        });
+                    }
+                    
+                    // Recupera ClickItems (novo!)
+                    if (parsed.clickItems) {
+                        parsed.clickItems.forEach((savedI, index) => {
+                             // Busca pelo ID para garantir compatibilidade futura
+                            const localItem = gameState.clickItems.find(i => i.id === savedI.id);
+                            if (localItem) {
+                                localItem.count = savedI.count;
+                            }
+                        });
+                    }
+
                     recalculateCPS();
+                    recalculateClickValue();
+                    
                 } catch (e) {
-                    console.error("Save corrompido, iniciando novo jogo.");
+                    console.error("Save corrompido ou versão antiga.", e);
                 }
             }
         }
