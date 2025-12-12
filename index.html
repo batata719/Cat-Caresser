@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mestre dos Gatos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #201a1e;
+            --panel-color: #332b30;
+            --accent-color: #ffcc00; /* Amarelo Gato */
+            --text-color: #ffffff;
+            --btn-bg: #4a3b45;
+            --green: #4cd964;
+            --red: #ff453a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- TELA INICIAL --- */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(32, 26, 30, 0.98);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+
+        .start-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .start-content {
+            text-align: center;
+            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .start-content h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 4rem;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+            text-shadow: 0 5px 15px rgba(255, 204, 0, 0.3);
+        }
+
+        .start-content p {
+            font-size: 1.2rem;
+            color: #ccc;
+            margin-bottom: 30px;
+        }
+
+        .cat-mascot {
+            font-size: 8rem;
+            margin-bottom: 30px;
+            display: inline-block;
+            animation: floatMascot 3s ease-in-out infinite;
+        }
+
+        #start-btn {
+            padding: 15px 50px;
+            font-size: 1.5rem;
+            background-color: var(--accent-color);
+            color: #201a1e;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Fredoka One', cursive;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 15px rgba(255, 204, 0, 0.4);
+        }
+
+        #start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 204, 0, 0.6);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes floatMascot {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        /* --- MODAL DE CONFIRMAÇÃO --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 3000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s;
+        }
+        
+        .modal-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .modal {
+            background-color: var(--panel-color);
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            max-width: 90%;
+            width: 400px;
+        }
+
+        .modal h3 { margin-bottom: 1rem; color: var(--accent-color); }
+        .modal p { margin-bottom: 2rem; color: #ddd; }
+        .modal-buttons { display: flex; gap: 1rem; justify-content: center; }
+
+        /* --- JOGO PRINCIPAL --- */
+        .game-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .bakery-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, #332b30 0%, #1a1518 100%);
+            position: relative;
+            border-right: 2px solid #111;
+        }
+
+        .stats-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            z-index: 10;
+        }
+
+        h1#score-display {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3.5rem;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.4);
+            margin: 0;
+        }
+
+        #cps-display {
+            font-size: 1.1rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .clicker-container {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .cat-clicker {
+            font-size: 13rem;
+            filter: drop-shadow(0 0 25px rgba(0,0,0,0.6));
+            transition: transform 0.05s;
+            line-height: 1;
+        }
+
+        .cat-clicker:active {
+            transform: scale(0.90) rotate(-5deg);
+        }
+
+        .floating-number {
+            position: absolute;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.8rem;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.2); }
+        }
+
+        .store-section {
+            width: 400px;
+            background-color: var(--panel-color);
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+            border-left: 1px solid #444;
+        }
+
+        .store-section h2 {
+            text-align: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #555;
+            padding-bottom: 0.5rem;
+            color: var(--accent-color);
+            font-family: 'Fredoka One', cursive;
+        }
+
+        #store-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        #store-container::-webkit-scrollbar { width: 8px; }
+        #store-container::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        #store-container::-webkit-scrollbar-track { background: #2c2c2e; }
+
+        .upgrade-item {
+            background-color: var(--btn-bg);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .upgrade-item:hover {
+            background-color: #5c4a56;
+            transform: translateX(-2px);
+            border-color: rgba(255, 204, 0, 0.3);
+        }
+
+        .upgrade-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(0.8);
+            box-shadow: none;
+        }
+
+        .upgrade-info h3 { font-size: 1.1rem; margin-bottom: 4px; font-weight: bold; }
+        .upgrade-info p { font-size: 0.9rem; color: #aaa; }
+        .upgrade-cost { font-weight: bold; color: var(--green); }
+        .upgrade-count { font-size: 1.8rem; font-weight: bold; color: rgba(255,255,255,0.15); min-width: 40px; text-align: center;}
+
+        .controls { margin-top: 2rem; display: flex; gap: 10px; }
+        
+        .util-btn {
+            background: transparent;
+            border: 2px solid #555;
+            color: #ccc;
+            padding: 10px 24px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .util-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: #fff; }
+        
+        .util-btn.danger { border-color: #883333; color: #cc6666; }
+        .util-btn.danger:hover { background: var(--red); border-color: var(--red); color: white; }
+
+        #message-log {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #ffcc00;
+            height: 24px;
+            font-style: italic;
+            text-align: center;
+            transition: opacity 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .game-container { flex-direction: column; overflow-y: auto; }
+            .store-section { width: 100%; height: auto; padding-bottom: 40px; }
+            .bakery-section { min-height: 70vh; border-right: none; border-bottom: 2px solid #000; }
+            
+            .start-content h1 { font-size: 2.5rem; }
+            .cat-mascot { font-size: 5rem; }
+            #score-display { font-size: 2.5rem; }
+            .cat-clicker { font-size: 10rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TELA INICIAL -->
+    <div id="start-screen" class="start-screen">
+        <div class="start-content">
+            <h1>Mestre dos Gatos 🐾</h1>
+            <p>Faça carinho, colete ronrons e domine o universo felino!</p>
+            <div class="cat-mascot">🐱</div>
+            <br>
+            <button id="start-btn">COMEÇAR A JOGAR</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE RESET -->
+    <div id="reset-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3>⚠️ Atenção</h3>
+            <p>Quer mesmo abandonar seus gatos? Todo o progresso será perdido para sempre.</p>
+            <div class="modal-buttons">
+                <button id="confirm-reset" class="util-btn danger">Sim, Resetar</button>
+                <button id="cancel-reset" class="util-btn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JOGO PRINCIPAL -->
+    <div class="game-container">
+        <!-- Seção Esquerda: O Gato e Status -->
+        <section class="bakery-section">
+            <div class="stats-header">
+                <h1 id="score-display">0 Ronrons</h1>
+                <p id="cps-display">por segundo: 0.0</p>
+            </div>
+
+            <div class="clicker-container">
+                <!-- O Gato Gigante -->
+                <div id="big-cat" class="cat-clicker">🐱</div>
+            </div>
+            
+            <div class="controls">
+                <button id="save-btn" class="util-btn">💾 Salvar</button>
+                <button id="reset-btn" class="util-btn danger">🗑️ Resetar</button>
+            </div>
+            <div id="message-log">Comece a fazer carinho no gato!</div>
+        </section>
+
+        <!-- Seção Direita: Pet Shop -->
+        <section class="store-section">
+            <h2>Pet Shop</h2>
+            <div id="store-container">
+                <!-- Os itens serão gerados pelo JavaScript aqui -->
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // --- Configuração Inicial ---
+        const gameState = {
+            score: 0,
+            totalScoreAccumulated: 0,
+            cps: 0,
+            clickValue: 1,
+            // Lista para guardar timestamps dos cliques (para calcular CPS do jogador)
+            clickHistory: [], 
+            buildings: [
+                { id: 0, name: "Petisco", baseCost: 15, cps: 0.1, count: 0, icon: "🐟" },
+                { id: 1, name: "Caixa de Papelão", baseCost: 100, cps: 1, count: 0, icon: "📦" },
+                { id: 2, name: "Arranhador", baseCost: 1100, cps: 8, count: 0, icon: "🧶" },
+                { id: 3, name: "Catnip (Erva)", baseCost: 12000, cps: 47, count: 0, icon: "🌿" },
+                { id: 4, name: "Fábrica de Sachê", baseCost: 130000, cps: 260, count: 0, icon: "🏭" },
+                { id: 5, name: "Santuário Felino", baseCost: 1400000, cps: 1400, count: 0, icon: "⛩️" },
+                { id: 6, name: "Planeta dos Gatos", baseCost: 20000000, cps: 7800, count: 0, icon: "🪐" }
+            ]
+        };
+
+        // --- Elementos do DOM ---
+        const elements = {
+            scoreDisplay: document.getElementById('score-display'),
+            cpsDisplay: document.getElementById('cps-display'),
+            bigCat: document.getElementById('big-cat'),
+            storeContainer: document.getElementById('store-container'),
+            msgLog: document.getElementById('message-log'),
+            saveBtn: document.getElementById('save-btn'),
+            resetBtn: document.getElementById('reset-btn'),
+            title: document.querySelector('title'),
+            // Tela Inicial
+            startScreen: document.getElementById('start-screen'),
+            startBtn: document.getElementById('start-btn'),
+            // Modal Reset
+            resetModal: document.getElementById('reset-modal'),
+            confirmResetBtn: document.getElementById('confirm-reset'),
+            cancelResetBtn: document.getElementById('cancel-reset')
+        };
+
+        // --- Funções Principais ---
+
+        function init() {
+            loadGame();
+            renderStore();
+            
+            // Loops
+            setInterval(gameLoop, 100); 
+            setInterval(saveGame, 30000); 
+            
+            // Eventos
+            elements.bigCat.addEventListener('click', handleCatClick);
+            elements.saveBtn.addEventListener('click', () => { saveGame(); showMessage("Progresso salvo! Miau!"); });
+            
+            // Lógica do Modal de Reset
+            elements.resetBtn.addEventListener('click', () => {
+                elements.resetModal.classList.remove('hidden');
+                elements.resetModal.style.opacity = 1;
+            });
+
+            elements.cancelResetBtn.addEventListener('click', () => {
+                elements.resetModal.classList.add('hidden');
+            });
+
+            elements.confirmResetBtn.addEventListener('click', performReset);
+            
+            // Evento da Tela Inicial
+            elements.startBtn.addEventListener('click', startGame);
+        }
+
+        function startGame() {
+            elements.startScreen.classList.add('hidden');
+        }
+
+        function handleCatClick(e) {
+            addScore(gameState.clickValue);
+            
+            // Registra o timestamp deste clique para o cálculo de CPS
+            gameState.clickHistory.push(Date.now());
+
+            // Efeito visual aleatório
+            const msgs = ["+1", "Miau!", "Prrr", "❤️"];
+            const text = msgs[Math.floor(Math.random() * msgs.length)];
+            createParticles(e.clientX, e.clientY, text === "+1" ? `+${formatNumber(gameState.clickValue)}` : text);
+        }
+
+        function gameLoop() {
+            if (gameState.cps > 0) {
+                const earned = gameState.cps / 10;
+                addScore(earned);
+            }
+            updateUI();
+        }
+
+        function addScore(amount) {
+            gameState.score += amount;
+            gameState.totalScoreAccumulated += amount;
+        }
+
+        function updateUI() {
+            // Cálcula CPS do Jogador (cliques nos últimos 1000ms)
+            const now = Date.now();
+            // Mantém apenas os cliques do último segundo
+            gameState.clickHistory = gameState.clickHistory.filter(timestamp => now - timestamp <= 1000);
+            
+            const playerCPS = gameState.clickHistory.length * gameState.clickValue;
+            const totalCPS = gameState.cps + playerCPS;
+
+            elements.scoreDisplay.textContent = `${formatNumber(Math.floor(gameState.score))} Ronrons`;
+            
+            // Exibe: Total (Auto + Clicks)
+            // Se o jogador não estiver clicando, mostra apenas o valor normal
+            if (playerCPS > 0) {
+                elements.cpsDisplay.textContent = `por segundo: ${formatNumber(totalCPS.toFixed(1))} (Auto: ${formatNumber(gameState.cps.toFixed(1))})`;
+            } else {
+                elements.cpsDisplay.textContent = `por segundo: ${formatNumber(gameState.cps.toFixed(1))}`;
+            }
+
+            elements.title.textContent = `${formatNumber(Math.floor(gameState.score))} Ronrons - Gatos`;
+
+            gameState.buildings.forEach(building => {
+                const btn = document.getElementById(`btn-building-${building.id}`);
+                const cost = getBuildingCost(building);
+                
+                if (gameState.score >= cost) {
+                    btn.classList.remove('disabled');
+                } else {
+                    btn.classList.add('disabled');
+                }
+            });
+        }
+
+        // --- Loja ---
+
+        function getBuildingCost(building) {
+            return Math.floor(building.baseCost * Math.pow(1.15, building.count));
+        }
+
+        function renderStore() {
+            elements.storeContainer.innerHTML = "";
+            
+            gameState.buildings.forEach(building => {
+                const cost = getBuildingCost(building);
+                
+                const item = document.createElement('div');
+                item.className = 'upgrade-item disabled';
+                item.id = `btn-building-${building.id}`;
+                item.onclick = () => buyBuilding(building.id);
+                
+                item.innerHTML = `
+                    <div class="upgrade-icon" style="font-size: 2rem; margin-right: 15px;">${building.icon}</div>
+                    <div class="upgrade-info" style="flex: 1;">
+                        <h3>${building.name}</h3>
+                        <p class="upgrade-cost">🧶 ${formatNumber(cost)}</p>
+                        <p style="font-size: 0.8rem; margin-top: 2px;">+${formatNumber(building.cps)} CPS</p>
+                    </div>
+                    <div class="upgrade-count" id="count-building-${building.id}">${building.count}</div>
+                `;
+                
+                elements.storeContainer.appendChild(item);
+            });
+        }
+
+        function buyBuilding(id) {
+            const building = gameState.buildings.find(b => b.id === id);
+            const cost = getBuildingCost(building);
+
+            if (gameState.score >= cost) {
+                gameState.score -= cost;
+                building.count++;
+                recalculateCPS();
+                
+                const countDisplay = document.getElementById(`count-building-${building.id}`);
+                countDisplay.textContent = building.count;
+                
+                renderStore();
+                
+                const msgs = ["Boa escolha!", "Os gatos amaram!", "Mais ronrons!", "Purr purr...", "Delícia!"];
+                showMessage(`${building.name} comprado! ${msgs[Math.floor(Math.random()*msgs.length)]}`);
+            }
+        }
+
+        function recalculateCPS() {
+            let cps = 0;
+            gameState.buildings.forEach(b => {
+                cps += b.count * b.cps;
+            });
+            gameState.cps = cps;
+        }
+
+        // --- Efeitos ---
+
+        function createParticles(x, y, text) {
+            const particle = document.createElement('div');
+            particle.className = 'floating-number';
+            particle.textContent = text;
+            
+            const randomX = (Math.random() - 0.5) * 50;
+            particle.style.left = `${x + randomX}px`;
+            particle.style.top = `${y - 30}px`;
+            
+            document.body.appendChild(particle);
+            
+            setTimeout(() => { particle.remove(); }, 1000);
+        }
+
+        function showMessage(msg) {
+            elements.msgLog.textContent = msg;
+            elements.msgLog.style.opacity = 1;
+            
+            // Limpa o timeout anterior se existir, para não cortar a mensagem nova
+            if (elements.msgLog.timeout) clearTimeout(elements.msgLog.timeout);
+            
+            elements.msgLog.timeout = setTimeout(() => {
+                elements.msgLog.style.opacity = 0;
+            }, 3000);
+        }
+
+        function formatNumber(num) {
+            num = Number(num); // Garante que é tratado como número (importante quando vem de .toFixed que gera string)
+            
+            if (num >= 1000000000) return (num / 1000000000).toFixed(2) + 'B';
+            if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            
+            // CORREÇÃO: Se for número inteiro, mostra inteiro. 
+            // Se tiver casas decimais (ex: 0.1), mostra com 1 casa.
+            return Number.isInteger(num) ? num : num.toFixed(1);
+        }
+
+        // --- Save/Load ---
+
+        function saveGame() {
+            // O clickHistory não precisa ser salvo, pois é momentâneo
+            const saveState = { ...gameState, clickHistory: [] };
+            localStorage.setItem('catClickerSave', JSON.stringify(saveState));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('catClickerSave');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    gameState.score = parsed.score || 0;
+                    gameState.totalScoreAccumulated = parsed.totalScoreAccumulated || 0;
+                    
+                    parsed.buildings.forEach((savedB, index) => {
+                        if (gameState.buildings[index]) {
+                            gameState.buildings[index].count = savedB.count;
+                        }
+                    });
+                    recalculateCPS();
+                } catch (e) {
+                    console.error("Save corrompido, iniciando novo jogo.");
+                }
+            }
+        }
+
+        function performReset() {
+            localStorage.removeItem('catClickerSave');
+            location.reload();
+        }
+
+        init();
+    </script>
+</body>
+</html>
