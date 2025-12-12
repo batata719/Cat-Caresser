@@ -55,7 +55,7 @@
         
         .util-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: #fff; }
         .util-btn.danger { border-color: #883333; color: #cc6666; }
-        .util-btn.danger:hover { background: var(--red); border-color: var(--red); color: white; }
+        .util-btn.danger:hover { background: var(--red) !important; border-color: var(--red) !important; color: white !important; opacity: 1; }
         
         /* Botão Ascender (Especial) */
         .util-btn.ascend { border-color: var(--karma-color); color: var(--karma-color); }
@@ -129,6 +129,10 @@
         }
         .modal h3 { color: var(--accent-color); font-size: 1.8rem; margin-bottom: 1rem; font-family: 'Fredoka One'; }
         
+        /* Modal Offline */
+        .modal.offline-theme { border-color: var(--green); box-shadow: 0 0 30px rgba(76,217,100,0.2); }
+        .modal.offline-theme h3 { color: var(--green); }
+
         /* Modal Ascensão */
         .modal.ascend-theme { border-color: var(--karma-color); box-shadow: 0 0 30px rgba(0,229,255,0.3); }
         .modal.ascend-theme h3 { color: var(--karma-color); }
@@ -175,6 +179,7 @@
             background: radial-gradient(circle at center, #332b30 0%, #1a1518 100%);
             position: relative;
             border-right: 2px solid #111;
+            transition: filter 0.5s;
         }
 
         /* --- NOVOS DISPLAYERS DE MOEDA --- */
@@ -222,7 +227,7 @@
 
         .stats-header { text-align: center; margin-bottom: 2rem; z-index: 10; }
         #score-display { font-family: 'Fredoka One'; font-size: 3.5rem; color: var(--accent-color); margin: 0; }
-        #cps-display { color: #888; }
+        #cps-display { color: #888; font-size: 1.1rem; margin-top: 5px; }
         
         .clicker-container { position: relative; cursor: pointer; }
         .cat-clicker { font-size: 13rem; filter: drop-shadow(0 0 25px rgba(0,0,0,0.6)); transition: transform 0.05s; }
@@ -238,7 +243,7 @@
         }
         .bottom-left-panel .util-btn { font-size: 0.8rem; padding: 8px 12px; opacity: 0.7; background: rgba(0,0,0,0.4); border: 1px solid #444; }
         .bottom-left-panel .util-btn:hover { opacity: 1; border-color: #888; }
-
+        
         /* --- LOJA --- */
         .store-section { width: 400px; background: var(--panel-color); display: flex; flex-direction: column; padding: 1rem; box-shadow: -5px 0 15px rgba(0,0,0,0.5); }
         
@@ -271,7 +276,8 @@
         .upgrade-item.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.8); }
         .upgrade-item.sell-mode { border-color: rgba(255, 69, 58, 0.3); }
         .upgrade-item.sell-mode:hover { background-color: #452b2b; border-color: var(--red); }
-        
+        .upgrade-item.purchased { opacity: 1 !important; cursor: default; }
+
         /* Custo especial */
         .upgrade-cost.sachet { color: var(--gold); }
         .upgrade-cost.refund { color: var(--green); }
@@ -291,6 +297,12 @@
         .floating-number { position: absolute; color: var(--accent-color); font-weight: bold; font-size: 1.8rem; pointer-events: none; animation: floatUp 1s forwards; text-shadow: 2px 2px 0 #000; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-80px); } }
         
+        /* Animation Restored */
+        @keyframes floatMascot {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
@@ -319,6 +331,19 @@
             <div class="cat-mascot">🐱</div>
             <br>
             <button id="start-btn">COMEÇAR A JOGAR</button>
+        </div>
+    </div>
+
+    <!-- MODAL OFFLINE EARNINGS -->
+    <div id="offline-modal" class="modal-overlay hidden">
+        <div class="modal offline-theme">
+            <h3>Bem-vindo de volta! 🌙</h3>
+            <p>Enquanto você dormia, seus gatos trabalharam.</p>
+            <div style="background: rgba(76,217,100,0.1); padding: 15px; border-radius: 10px; margin: 20px 0;">
+                <p>Tempo Ausente: <span id="offline-time" style="color: #fff;">0s</span></p>
+                <p style="font-size: 1.5rem; margin-top: 10px;">Ganhou: <span id="offline-earnings" style="color: var(--green); font-weight: bold;">0</span> Ronrons</p>
+            </div>
+            <button id="close-offline-btn" class="util-btn" style="margin: 0 auto; border-color: var(--green); color: var(--green);">Coletar</button>
         </div>
     </div>
 
@@ -469,7 +494,7 @@
             activeTab: 'buildings',
             buyMultiplier: 1,
             sellMode: false,
-            clickHistory: [], 
+            clickHistory: [], // Histórico para calcular CPS de clique
             lastSaveTime: Date.now(),
             
             // Stats
@@ -504,7 +529,6 @@
                 { id: 105, name: "Manopla do Infinito", baseCost: 50000000, clickIncrease: 5000, count: 0, icon: "💎" },
                 { id: 106, name: "Dedo de Midas", baseCost: 1000000000, clickIncrease: 25000, count: 0, icon: "👑" }
             ],
-            // LISTA COMPLETA REINTEGRADA E ORDENADA POR PREÇO
             boosts: [
                 { id: 200, name: "Salmão Fresco", baseCost: 1000, targetId: 0, targetType: 'building', multiplier: 2, count: 0, icon: "🍣", desc: "Petiscos geram 2x mais" },
                 { id: 300, name: "Esmalte Brilhante", baseCost: 2500, targetId: 100, targetType: 'click', multiplier: 2, count: 0, icon: "💅✨", desc: "Unhas dão 2x mais" },
@@ -538,7 +562,6 @@
                 { id: 901, name: "Pescador Mestre", costSachets: 3, multiplier: 1, count: 0, icon: "🎣", desc: "Melhora a chance na pesca (Passivo)" },
                 { id: 902, name: "Reencarnação Veloz", costSachets: 5, multiplier: 2, count: 0, icon: "⏩", desc: "Ganha 2x mais Karma ao ascender" }
             ],
-            // LISTA DE CONQUISTAS REINTEGRADA
             achievements: [
                 { id: 'click1', name: "Primeiro Carinho", desc: "Clique no gato 1 vez.", icon: "👆", unlocked: false, check: (s) => s.totalClicks >= 1 },
                 { id: 'click100', name: "Amante de Gatos", desc: "100 Cliques", icon: "😻", unlocked: false, check: (s) => s.totalClicks >= 100 },
@@ -581,6 +604,7 @@
             statsModal: document.getElementById('stats-modal'),
             achievementsModal: document.getElementById('achievements-modal'),
             resetModal: document.getElementById('reset-modal'),
+            offlineModal: document.getElementById('offline-modal'), // Novo
             
             // Modal Elements
             currentKarmaDisplay: document.getElementById('current-karma-display'),
@@ -598,6 +622,11 @@
             closeAchievementsBtn: document.getElementById('close-achievements-btn'),
             confirmResetBtn: document.getElementById('confirm-reset'),
             cancelResetBtn: document.getElementById('cancel-reset'),
+            
+            // Offline Elements
+            offlineTimeDisplay: document.getElementById('offline-time'),
+            offlineEarningsDisplay: document.getElementById('offline-earnings'),
+            closeOfflineBtn: document.getElementById('close-offline-btn'),
             
             // Listas
             statsContent: document.getElementById('stats-content'),
@@ -624,6 +653,7 @@
         let fishingSpeed = 2;
         let fishBonusTimeout = null;
         let lastFishSpawn = Date.now();
+        let catnipRainActive = false; // Estado do evento de chuva
 
         function init() {
             loadGame();
@@ -632,7 +662,9 @@
             
             setInterval(gameLoop, 100); 
             setInterval(checkAchievements, 1000); 
-            setInterval(trySpawnGoldenFish, 1000); // Tenta spawnar peixe
+            setInterval(trySpawnGoldenFish, 1000); 
+            setInterval(trySpawnLuckyCat, 1000); // Checa Gato da Sorte
+            setInterval(trySpawnCatnipRain, 1000); // Checa Chuva de Catnip
 
             // Auto-Save
             setInterval(() => { saveGame(); showMessage("Salvo! 💾"); }, 30000); 
@@ -677,6 +709,9 @@
             elements.resetBtn.addEventListener('click', () => elements.resetModal.classList.remove('hidden'));
             elements.confirmResetBtn.addEventListener('click', performHardReset);
             elements.cancelResetBtn.addEventListener('click', () => elements.resetModal.classList.add('hidden'));
+            
+            // Offline
+            elements.closeOfflineBtn.addEventListener('click', () => elements.offlineModal.classList.add('hidden'));
         }
 
         // --- LÓGICA DO JOGO ---
@@ -707,6 +742,9 @@
         }
 
         function handleCatClick(e) {
+            // Rastreia cliques para o CPS dinâmico
+            gameState.clickHistory.push(Date.now());
+            
             let clickVal = gameState.clickValue * getGlobalMultiplier();
             addScore(clickVal);
             
@@ -716,9 +754,23 @@
 
         function updateUI() {
             let globalMulti = getGlobalMultiplier();
+            let passiveCPS = gameState.cps * globalMulti;
+
+            // Calcula CPS ativo (cliques no último segundo)
+            const now = Date.now();
+            gameState.clickHistory = gameState.clickHistory.filter(t => now - t < 1000);
+            let activeCPS = gameState.clickHistory.length * (gameState.clickValue * globalMulti);
+            let totalCPS = passiveCPS + activeCPS;
             
             elements.scoreDisplay.textContent = `${formatNumber(Math.floor(gameState.score))} Ronrons`;
-            elements.cpsDisplay.textContent = `por segundo: ${formatNumber((gameState.cps * globalMulti).toFixed(1))}`;
+            
+            // Display Combinado
+            if(activeCPS > 0) {
+                elements.cpsDisplay.innerHTML = `Total: ${formatNumber(totalCPS.toFixed(1))}/s<br><span style="font-size:0.7em; opacity:0.7;">(Auto: ${formatNumber(passiveCPS.toFixed(1))} + Click: ${formatNumber(activeCPS.toFixed(1))})</span>`;
+            } else {
+                elements.cpsDisplay.textContent = `por segundo: ${formatNumber(passiveCPS.toFixed(1))}`;
+            }
+
             elements.clickPowerDisplay.textContent = `poder de carinho: ${formatNumber((gameState.clickValue * globalMulti).toFixed(1))}`;
             
             elements.hudKarma.textContent = formatNumber(gameState.karma);
@@ -902,7 +954,7 @@
             }, 1500);
         }
 
-        // --- PEIXE DOURADO (EVENTO) ---
+        // --- EVENTOS ALEATÓRIOS (PEIXE, GATO DA SORTE, CHUVA DE CATNIP) ---
 
         function trySpawnGoldenFish() {
             if (Math.random() < 0.01 && !document.querySelector('.golden-fish')) {
@@ -937,6 +989,36 @@
                 elements.frenzyOverlay.classList.remove('active');
                 showMessage("Frenesi acabou.");
             }, 60000); 
+        }
+
+        function trySpawnLuckyCat() {
+            // Chance pequena de dar um bônus fixo
+            if(Math.random() < 0.005) { // 0.5% por segundo
+                let bonus = gameState.cps * 300; // 5 minutos de produção
+                if(bonus < 100) bonus = 100;
+                addScore(bonus);
+                showMessage(`🍀 Gato da Sorte passou! +${formatNumber(bonus)} Ronrons!`);
+            }
+        }
+
+        function trySpawnCatnipRain() {
+            // Chance pequena de dobrar produção de catnip
+            if(!catnipRainActive && Math.random() < 0.002) { // 0.2% por segundo (muito raro)
+                catnipRainActive = true;
+                showMessage("🌿 CHUVA DE CATNIP! Produção de Catnip dobrada por 30s!");
+                
+                // Efeito Visual
+                document.querySelector('.bakery-section').style.filter = "sepia(1) hue-rotate(50deg) saturate(3)";
+                
+                recalculateCPS();
+                
+                setTimeout(() => {
+                    catnipRainActive = false;
+                    document.querySelector('.bakery-section').style.filter = "none";
+                    showMessage("Chuva de Catnip acabou.");
+                    recalculateCPS();
+                }, 30000);
+            }
         }
 
         // --- LOJA E ABAS ---
@@ -1135,6 +1217,9 @@
             let cps = 0;
             gameState.buildings.forEach(b => {
                 let multi = 1;
+                // Bônus de Chuva de Catnip (ID 3 = Catnip)
+                if (b.id === 3 && catnipRainActive) multi *= 2;
+                
                 // Check boosts
                 gameState.boosts.forEach(bst => {
                     if ((bst.targetType === 'building' || !bst.targetType) && bst.targetId === b.id && bst.count > 0) multi *= bst.multiplier;
@@ -1230,6 +1315,7 @@
         // --- SAVE/LOAD ---
         
         function saveGame() {
+            gameState.lastSaveTime = Date.now();
             localStorage.setItem('catClickerSave', JSON.stringify(gameState));
         }
         
@@ -1286,8 +1372,37 @@
                     
                     // Visual
                     if(gameState.karma > 50) elements.bigCat.textContent = "😼";
+
+                    // Checa Ganhos Offline
+                    checkOfflineEarnings();
                 } catch(e) { console.error(e); }
             }
+        }
+
+        function checkOfflineEarnings() {
+            const now = Date.now();
+            if (gameState.lastSaveTime) {
+                const secondsPassed = (now - gameState.lastSaveTime) / 1000;
+                
+                if (secondsPassed > 60 && gameState.cps > 0) { // Minimo 1 minuto
+                    // Calcula baseando no Karma, mas sem bônus temporários
+                    const baseMulti = 1 + (gameState.karma * 0.1);
+                    const earnings = Math.floor(gameState.cps * baseMulti * secondsPassed);
+                    
+                    if (earnings > 0) {
+                        addScore(earnings);
+                        elements.offlineTimeDisplay.textContent = formatSeconds(secondsPassed);
+                        elements.offlineEarningsDisplay.textContent = formatNumber(earnings);
+                        elements.offlineModal.classList.remove('hidden');
+                    }
+                }
+            }
+        }
+
+        function formatSeconds(seconds) {
+            if (seconds < 60) return Math.floor(seconds) + "s";
+            if (seconds < 3600) return Math.floor(seconds/60) + "m";
+            return Math.floor(seconds/3600) + "h";
         }
 
         function setSellMode(mode) { 
