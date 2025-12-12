@@ -110,7 +110,7 @@
             50% { transform: translateY(-20px) rotate(5deg); }
         }
 
-        /* --- MODAL (Usado para Reset, Offline e Stats) --- */
+        /* --- MODAL (Usado para Reset, Offline, Stats e Conquistas) --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -157,8 +157,8 @@
         .modal p { margin-bottom: 1.5rem; color: #ddd; line-height: 1.5; }
         .modal-buttons { display: flex; gap: 1rem; justify-content: center; }
 
-        /* Estilos da lista de Estatísticas */
-        .stats-list {
+        /* Estilos da lista de Estatísticas e Conquistas */
+        .scrollable-list {
             text-align: left;
             margin-bottom: 20px;
             background: rgba(0,0,0,0.2);
@@ -168,6 +168,11 @@
             overflow-y: auto;
         }
         
+        /* Scrollbar customizada */
+        .scrollable-list::-webkit-scrollbar { width: 8px; }
+        .scrollable-list::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        .scrollable-list::-webkit-scrollbar-track { background: #2c2c2e; }
+
         .stat-row {
             display: flex;
             justify-content: space-between;
@@ -179,6 +184,74 @@
         .stat-row:last-child { border-bottom: none; }
         .stat-label { color: #aaa; }
         .stat-value { font-weight: bold; color: #fff; }
+
+        /* Estilos de Conquistas */
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+        .achievement-item.unlocked {
+            border-color: var(--accent-color);
+            background: rgba(255, 204, 0, 0.1);
+        }
+
+        .achievement-item.locked {
+            opacity: 0.5;
+            filter: grayscale(1);
+        }
+
+        .achievement-icon-list {
+            font-size: 2rem;
+            margin-right: 15px;
+            width: 45px;
+            text-align: center;
+        }
+
+        .achievement-text-list h4 {
+            color: var(--accent-color);
+            font-size: 1rem;
+            margin-bottom: 3px;
+        }
+
+        .achievement-text-list p {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin: 0;
+        }
+
+        /* Notificação Toast */
+        .achievement-toast {
+            position: fixed;
+            top: 20px;
+            right: -350px; /* Fora da tela */
+            background-color: var(--panel-color);
+            border: 2px solid var(--accent-color);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 4000;
+            transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+            width: 300px;
+        }
+
+        .achievement-toast.show {
+            right: 20px;
+        }
+
+        .toast-icon { font-size: 2.5rem; }
+        .toast-content h4 { color: var(--accent-color); margin-bottom: 5px; font-size: 1rem; }
+        .toast-content p { font-size: 0.85rem; color: #ccc; }
+
 
         /* --- JOGO PRINCIPAL --- */
         .game-container {
@@ -504,6 +577,15 @@
 </head>
 <body>
 
+    <!-- NOTIFICAÇÃO DE CONQUISTA -->
+    <div id="achievement-toast" class="achievement-toast">
+        <div class="toast-icon">🏆</div>
+        <div class="toast-content">
+            <h4>Conquista Desbloqueada!</h4>
+            <p id="toast-text">Nome da Conquista</p>
+        </div>
+    </div>
+
     <!-- TELA INICIAL -->
     <div id="start-screen" class="start-screen">
         <div class="start-content">
@@ -519,10 +601,21 @@
     <div id="stats-modal" class="modal-overlay hidden">
         <div class="modal">
             <h3>Estatísticas 📊</h3>
-            <div id="stats-content" class="stats-list">
+            <div id="stats-content" class="scrollable-list">
                 <!-- Conteúdo gerado via JS -->
             </div>
             <button id="close-stats-btn" class="util-btn">Fechar</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONQUISTAS -->
+    <div id="achievements-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3>Conquistas 🏆</h3>
+            <div id="achievements-content" class="scrollable-list">
+                <!-- Conteúdo gerado via JS -->
+            </div>
+            <button id="close-achievements-btn" class="util-btn">Fechar</button>
         </div>
     </div>
 
@@ -574,6 +667,7 @@
             <div class="controls">
                 <button id="save-btn" class="util-btn">💾 Salvar</button>
                 <button id="stats-btn" class="util-btn">📊 Stats</button>
+                <button id="achievements-btn" class="util-btn">🏆</button>
             </div>
             <div id="message-log">Comece a fazer carinho no gato!</div>
 
@@ -636,7 +730,6 @@
                 { id: 4, name: "Fábrica de Sachê", baseCost: 130000, cps: 260, count: 0, icon: "🏭" },
                 { id: 5, name: "Santuário Felino", baseCost: 1400000, cps: 1400, count: 0, icon: "⛩️" },
                 { id: 6, name: "Planeta dos Gatos", baseCost: 20000000, cps: 7800, count: 0, icon: "🪐" },
-                // Novos Prédios de Tier Alto
                 { id: 7, name: "Dimensão Gatástica", baseCost: 500000000000, cps: 500000, count: 0, icon: "🌌" },
                 { id: 8, name: "Deus Gato", baseCost: 100000000000000, cps: 10000000, count: 0, icon: "🔱" }
             ],
@@ -652,7 +745,6 @@
             ],
 
             boosts: [
-                // Ordenado por PREÇO (Crescente)
                 { id: 200, name: "Salmão Fresco", baseCost: 1000, targetId: 0, targetType: 'building', multiplier: 2, count: 0, icon: "🍣", desc: "Petiscos geram 2x mais" },
                 { id: 300, name: "Esmalte Brilhante", baseCost: 2500, targetId: 100, targetType: 'click', multiplier: 2, count: 0, icon: "💅✨", desc: "Unhas dão 2x mais" },
                 { id: 201, name: "Papelão Reforçado", baseCost: 5000, targetId: 1, targetType: 'building', multiplier: 2, count: 0, icon: "📦", desc: "Caixas geram 2x mais" },
@@ -679,6 +771,18 @@
                 { id: 216, name: "Galáxia de Leite", baseCost: 5000000000, targetId: 6, targetType: 'building', multiplier: 2, count: 0, icon: "🥛", desc: "Planetas geram +2x" },
                 { id: 220, name: "Dobra Espacial", baseCost: 5000000000000, targetId: 7, targetType: 'building', multiplier: 2, count: 0, icon: "🌀", desc: "Dimensões geram 2x mais" },
                 { id: 221, name: "Oferenda Cósmica", baseCost: 1000000000000000, targetId: 8, targetType: 'building', multiplier: 2, count: 0, icon: "🪐", desc: "Deuses geram 2x mais" }
+            ],
+
+            achievements: [
+                { id: 'click1', name: "Primeiro Carinho", desc: "Clique no gato 1 vez.", icon: "👆", unlocked: false, check: (s) => s.totalClicks >= 1 },
+                { id: 'click100', name: "Amante de Gatos", desc: "Clique no gato 100 vezes.", icon: "😻", unlocked: false, check: (s) => s.totalClicks >= 100 },
+                { id: 'click1000', name: "Dedo Furioso", desc: "Clique no gato 1.000 vezes.", icon: "⚡", unlocked: false, check: (s) => s.totalClicks >= 1000 },
+                { id: 'score1000', name: "Ronronando", desc: "Acumule 1.000 Ronrons no total.", icon: "🧶", unlocked: false, check: (s) => s.totalScoreAccumulated >= 1000 },
+                { id: 'score1m', name: "Milionário", desc: "Acumule 1 Milhão de Ronrons no total.", icon: "💰", unlocked: false, check: (s) => s.totalScoreAccumulated >= 1000000 },
+                { id: 'score1b', name: "Bilionário", desc: "Acumule 1 Bilhão de Ronrons no total.", icon: "🏦", unlocked: false, check: (s) => s.totalScoreAccumulated >= 1000000000 },
+                { id: 'cps100', name: "Linha de Produção", desc: "Alcance 100 Ronrons por segundo.", icon: "🏭", unlocked: false, check: (s) => s.cps >= 100 },
+                { id: 'build10', name: "Imobiliária", desc: "Tenha 10 construções no total.", icon: "🏗️", unlocked: false, check: (s) => s.buildings.reduce((a,b)=>a+b.count,0) >= 10 },
+                { id: 'build50', name: "Império", desc: "Tenha 50 construções no total.", icon: "🏰", unlocked: false, check: (s) => s.buildings.reduce((a,b)=>a+b.count,0) >= 50 }
             ]
         };
 
@@ -692,6 +796,7 @@
             msgLog: document.getElementById('message-log'),
             saveBtn: document.getElementById('save-btn'),
             statsBtn: document.getElementById('stats-btn'),
+            achievementsBtn: document.getElementById('achievements-btn'),
             resetBtn: document.getElementById('reset-btn'),
             title: document.querySelector('title'),
             // Tela Inicial
@@ -710,6 +815,12 @@
             statsModal: document.getElementById('stats-modal'),
             statsContent: document.getElementById('stats-content'),
             closeStatsBtn: document.getElementById('close-stats-btn'),
+            // Modal Conquistas
+            achievementsModal: document.getElementById('achievements-modal'),
+            achievementsContent: document.getElementById('achievements-content'),
+            closeAchievementsBtn: document.getElementById('close-achievements-btn'),
+            achievementToast: document.getElementById('achievement-toast'),
+            toastText: document.getElementById('toast-text'),
             // Abas
             tabBuildings: document.getElementById('tab-buildings'),
             tabUpgrades: document.getElementById('tab-upgrades'),
@@ -730,6 +841,7 @@
             
             // Loops
             setInterval(gameLoop, 100); 
+            setInterval(checkAchievements, 1000); // Checa conquistas a cada 1s
 
             // Save Automático
             setInterval(() => {
@@ -745,6 +857,7 @@
             elements.bigCat.addEventListener('click', handleCatClick);
             elements.saveBtn.addEventListener('click', () => { saveGame(); showMessage("Progresso salvo manualmente!"); });
             elements.statsBtn.addEventListener('click', showStatsModal);
+            elements.achievementsBtn.addEventListener('click', showAchievementsModal);
             
             // Modais
             elements.resetBtn.addEventListener('click', () => {
@@ -765,6 +878,11 @@
             elements.closeStatsBtn.addEventListener('click', () => {
                 elements.statsModal.classList.add('hidden');
             });
+
+            // Botão do Modal Conquistas
+            elements.closeAchievementsBtn.addEventListener('click', () => {
+                elements.achievementsModal.classList.add('hidden');
+            });
             
             elements.startBtn.addEventListener('click', startGame);
 
@@ -777,6 +895,48 @@
         function startGame() {
             elements.startScreen.classList.add('hidden');
         }
+
+        // --- Sistema de Conquistas ---
+
+        function checkAchievements() {
+            gameState.achievements.forEach(ach => {
+                if (!ach.unlocked && ach.check(gameState)) {
+                    ach.unlocked = true;
+                    showAchievementToast(ach);
+                }
+            });
+        }
+
+        function showAchievementToast(ach) {
+            elements.toastText.textContent = ach.name;
+            elements.achievementToast.classList.add('show');
+            
+            setTimeout(() => {
+                elements.achievementToast.classList.remove('show');
+            }, 3000);
+        }
+
+        function showAchievementsModal() {
+            elements.achievementsContent.innerHTML = "";
+            
+            gameState.achievements.forEach(ach => {
+                const div = document.createElement('div');
+                div.className = `achievement-item ${ach.unlocked ? 'unlocked' : 'locked'}`;
+                
+                div.innerHTML = `
+                    <div class="achievement-icon-list">${ach.unlocked ? ach.icon : '🔒'}</div>
+                    <div class="achievement-text-list">
+                        <h4>${ach.name}</h4>
+                        <p>${ach.desc}</p>
+                    </div>
+                `;
+                elements.achievementsContent.appendChild(div);
+            });
+
+            elements.achievementsModal.classList.remove('hidden');
+        }
+
+        // --- Estatísticas ---
 
         function showStatsModal() {
             const timePlayed = Date.now() - gameState.startTime;
@@ -795,6 +955,7 @@
             const totalBuildings = gameState.buildings.reduce((acc, b) => acc + b.count, 0);
             const totalUpgrades = gameState.clickItems.reduce((acc, i) => acc + i.count, 0);
             const totalBoosts = gameState.boosts.reduce((acc, b) => acc + b.count, 0);
+            const unlockedAch = gameState.achievements.filter(a => a.unlocked).length;
 
             // Gera HTML
             elements.statsContent.innerHTML = `
@@ -823,8 +984,8 @@
                     <span class="stat-value">${totalUpgrades}</span>
                 </div>
                 <div class="stat-row">
-                    <span class="stat-label">Acessórios Desbloqueados:</span>
-                    <span class="stat-value">${totalBoosts}/${gameState.boosts.length}</span>
+                    <span class="stat-label">Conquistas:</span>
+                    <span class="stat-value">${unlockedAch}/${gameState.achievements.length}</span>
                 </div>
             `;
 
@@ -1278,8 +1439,12 @@
 
         function saveGame() {
             // Salva o timestamp atual
+            // Criar um array simples para salvar conquistas desbloqueadas (apenas IDs)
+            const unlockedAchievementIds = gameState.achievements.filter(a => a.unlocked).map(a => a.id);
+
             const saveState = { 
                 ...gameState, 
+                achievements: unlockedAchievementIds, // Sobrescreve array complexo com array simples de IDs
                 clickHistory: [],
                 lastSaveTime: Date.now() // Importante para o cálculo offline
             };
@@ -1313,6 +1478,14 @@
                             const localBoost = gameState.boosts.find(b => b.id === savedBoost.id);
                             if (localBoost) localBoost.count = savedBoost.count;
                          });
+                    }
+                    
+                    // Carregar Conquistas
+                    if (parsed.achievements) {
+                        parsed.achievements.forEach(achId => {
+                            const achievement = gameState.achievements.find(a => a.id === achId);
+                            if (achievement) achievement.unlocked = true;
+                        });
                     }
 
                     // Recalcula o CPS baseado no que foi carregado
