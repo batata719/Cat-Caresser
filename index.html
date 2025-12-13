@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mestre dos Gatos: Ascensão</title>
+    <title>Mestre dos Gatos</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -14,9 +14,7 @@
             --btn-bg: #4a3b45;
             --green: #4cd964;
             --red: #ff453a;
-            --purple: #bf5af2;
-            --gold: #ffd700;
-            --karma-color: #00e5ff; /* Ciano para Karma */
+            --purple: #bf5af2; /* Cor para itens especiais */
         }
 
         * {
@@ -37,34 +35,6 @@
             align-items: center;
         }
 
-        /* --- UI GERAL --- */
-        .util-btn {
-            background: transparent;
-            border: 2px solid #555;
-            color: #ccc;
-            padding: 8px 16px;
-            cursor: pointer;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .util-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: #fff; }
-        .util-btn.danger { border-color: #883333; color: #cc6666; }
-        .util-btn.danger:hover { background: var(--red) !important; border-color: var(--red) !important; color: white !important; opacity: 1; }
-        
-        /* Botão Ascender (Especial) */
-        .util-btn.ascend { border-color: var(--karma-color); color: var(--karma-color); }
-        .util-btn.ascend:hover { background: rgba(0, 229, 255, 0.2); box-shadow: 0 0 10px var(--karma-color); }
-
-        /* Botão Pescar (Especial) */
-        .util-btn.fish-btn { border-color: var(--gold); color: var(--gold); }
-        .util-btn.fish-btn:hover { background: rgba(255, 215, 0, 0.2); box-shadow: 0 0 10px var(--gold); }
-
         /* --- TELA INICIAL --- */
         .start-screen {
             position: fixed;
@@ -79,97 +49,144 @@
             align-items: center;
             transition: opacity 0.5s ease, visibility 0.5s;
         }
-        .start-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        .start-content { text-align: center; animation: popIn 0.8s; }
-        .start-content h1 { font-family: 'Fredoka One'; font-size: 4rem; color: var(--accent-color); }
-        .cat-mascot { font-size: 8rem; animation: floatMascot 3s ease-in-out infinite; }
-        #start-btn { padding: 15px 50px; font-size: 1.5rem; background: var(--accent-color); border: none; border-radius: 50px; cursor: pointer; font-family: 'Fredoka One'; }
 
-        /* --- PEIXE DOURADO (EVENTO) --- */
-        .golden-fish {
-            position: absolute;
+        .start-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .start-content {
+            text-align: center;
+            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .start-content h1 {
+            font-family: 'Fredoka One', cursive;
             font-size: 4rem;
-            cursor: pointer;
-            z-index: 1500;
-            animation: swim 15s linear forwards;
-            filter: drop-shadow(0 0 10px gold);
-            transition: transform 0.1s;
-        }
-        .golden-fish:active { transform: scale(0.9); }
-        @keyframes swim {
-            from { left: -100px; }
-            to { left: 110vw; }
+            margin-bottom: 10px;
+            color: var(--accent-color);
+            text-shadow: 0 5px 15px rgba(255, 204, 0, 0.3);
         }
 
-        /* --- MODAIS --- */
+        .start-content p {
+            font-size: 1.2rem;
+            color: #ccc;
+            margin-bottom: 30px;
+        }
+
+        .cat-mascot {
+            font-size: 8rem;
+            margin-bottom: 30px;
+            display: inline-block;
+            animation: floatMascot 3s ease-in-out infinite;
+        }
+
+        #start-btn {
+            padding: 15px 50px;
+            font-size: 1.5rem;
+            background-color: var(--accent-color);
+            color: #201a1e;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Fredoka One', cursive;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 15px rgba(255, 204, 0, 0.4);
+        }
+
+        #start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 204, 0, 0.6);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes floatMascot {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        /* --- MODAL (Usado para Reset, Offline e Stats) --- */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background-color: rgba(0, 0, 0, 0.85);
             z-index: 3000;
             display: flex;
             justify-content: center;
             align-items: center;
-            opacity: 1;
             transition: opacity 0.3s;
         }
-        .modal-overlay.hidden { opacity: 0; pointer-events: none; }
+        
+        .modal-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
         .modal {
-            background: var(--panel-color);
+            background-color: var(--panel-color);
             padding: 2rem;
             border-radius: 15px;
             text-align: center;
             border: 2px solid var(--accent-color);
+            box-shadow: 0 0 30px rgba(0,0,0,0.7);
             max-width: 90%;
-            width: 500px;
-            position: relative;
+            width: 450px;
+            animation: popIn 0.3s ease-out;
+            color: #ddd;
         }
-        .modal h3 { color: var(--accent-color); font-size: 1.8rem; margin-bottom: 1rem; font-family: 'Fredoka One'; }
+
+        /* Estilo especial para o modal Offline */
+        .modal.offline-theme {
+            border-color: var(--purple);
+            box-shadow: 0 0 40px rgba(191, 90, 242, 0.3);
+        }
         
-        /* Modal Offline */
-        .modal.offline-theme { border-color: var(--green); box-shadow: 0 0 30px rgba(76,217,100,0.2); }
-        .modal.offline-theme h3 { color: var(--green); }
+        .modal.offline-theme h3 {
+            color: var(--purple);
+        }
 
-        /* Modal Ascensão */
-        .modal.ascend-theme { border-color: var(--karma-color); box-shadow: 0 0 30px rgba(0,229,255,0.3); }
-        .modal.ascend-theme h3 { color: var(--karma-color); }
+        .modal h3 { margin-bottom: 1rem; color: var(--accent-color); font-size: 1.5rem; font-family: 'Fredoka One', cursive; }
+        .modal p { margin-bottom: 1.5rem; color: #ddd; line-height: 1.5; }
+        .modal-buttons { display: flex; gap: 1rem; justify-content: center; }
 
-        /* Modal Pesca */
-        .fishing-area {
-            width: 100%;
-            height: 40px;
-            background: #222;
-            border-radius: 20px;
-            position: relative;
-            margin: 20px 0;
-            overflow: hidden;
-            border: 2px solid #555;
+        /* Estilos da lista de Estatísticas */
+        .stats-list {
+            text-align: left;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
         }
-        .fishing-target {
-            width: 60px;
-            height: 100%;
-            background: rgba(76, 217, 100, 0.5);
-            position: absolute;
-            left: 50%; /* Dinâmico */
-            transform: translateX(-50%);
-            border-left: 2px solid var(--green);
-            border-right: 2px solid var(--green);
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.95rem;
         }
-        .fishing-bar {
-            width: 10px;
-            height: 100%;
-            background: #fff;
-            position: absolute;
-            left: 0;
-            box-shadow: 0 0 10px #fff;
-        }
+        
+        .stat-row:last-child { border-bottom: none; }
+        .stat-label { color: #aaa; }
+        .stat-value { font-weight: bold; color: #fff; }
 
         /* --- JOGO PRINCIPAL --- */
-        .game-container { display: flex; width: 100%; height: 100%; }
-        
+        .game-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
         .bakery-section {
             flex: 1;
             display: flex;
@@ -179,74 +196,76 @@
             background: radial-gradient(circle at center, #332b30 0%, #1a1518 100%);
             position: relative;
             border-right: 2px solid #111;
-            transition: filter 0.5s;
         }
 
-        /* --- NOVOS DISPLAYERS DE MOEDA --- */
-        .currency-bar {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            display: flex;
-            gap: 15px;
+        .stats-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            z-index: 10;
         }
-        .currency-item {
-            background: rgba(0,0,0,0.5);
-            padding: 5px 10px;
-            border-radius: 15px;
+
+        h1#score-display {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3.5rem;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.4);
+            margin: 0;
+        }
+
+        #cps-display {
+            font-size: 1.1rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        #click-power-display {
             font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            color: #aaa;
+            margin-top: 2px;
         }
-        .karma-display { color: var(--karma-color); border: 1px solid var(--karma-color); }
-        .sachet-display { color: var(--gold); border: 1px solid var(--gold); }
 
-        /* Efeito de Frenesi (Peixe) */
-        .frenzy-overlay {
+        .clicker-container {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .cat-clicker {
+            font-size: 13rem; /* Volta a usar tamanho de fonte para o emoji */
+            filter: drop-shadow(0 0 25px rgba(0,0,0,0.6));
+            transition: transform 0.05s;
+            line-height: 1;
+        }
+
+        .cat-clicker:active {
+            transform: scale(0.90) rotate(-5deg);
+        }
+
+        .floating-number {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.8rem;
             pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.5s;
-            z-index: 5;
+            animation: floatUp 1s ease-out forwards;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.2); }
+        }
+
+        .store-section {
+            width: 400px;
+            background-color: var(--panel-color);
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding-top: 100px;
-        }
-        .frenzy-overlay.active { opacity: 1; }
-        .frenzy-text {
-            font-family: 'Fredoka One';
-            font-size: 3rem;
-            color: var(--gold);
-            text-shadow: 0 0 20px rgba(255,215,0,0.8);
-            animation: pulse 1s infinite;
+            flex-direction: column;
+            padding: 1rem;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+            border-left: 1px solid #444;
         }
 
-        .stats-header { text-align: center; margin-bottom: 2rem; z-index: 10; }
-        #score-display { font-family: 'Fredoka One'; font-size: 3.5rem; color: var(--accent-color); margin: 0; }
-        #cps-display { color: #888; font-size: 1.1rem; margin-top: 5px; }
-        
-        .clicker-container { position: relative; cursor: pointer; }
-        .cat-clicker { font-size: 13rem; filter: drop-shadow(0 0 25px rgba(0,0,0,0.6)); transition: transform 0.05s; }
-        .cat-clicker:active { transform: scale(0.90) rotate(-5deg); }
-
-        .controls { margin-top: 2rem; display: flex; gap: 10px; }
-        
-        /* Painel Inferior Esquerdo */
-        .bottom-left-panel {
-            position: absolute;
-            bottom: 15px; left: 15px;
-            display: flex; gap: 8px; z-index: 100;
-        }
-        .bottom-left-panel .util-btn { font-size: 0.8rem; padding: 8px 12px; opacity: 0.7; background: rgba(0,0,0,0.4); border: 1px solid #444; }
-        .bottom-left-panel .util-btn:hover { opacity: 1; border-color: #888; }
-        
-        /* --- LOJA --- */
-        .store-section { width: 400px; background: var(--panel-color); display: flex; flex-direction: column; padding: 1rem; box-shadow: -5px 0 15px rgba(0,0,0,0.5); }
-        
         .store-section h2 {
             text-align: center;
             margin-bottom: 1rem;
@@ -257,158 +276,281 @@
         }
 
         /* --- CONTROLES DE COMPRA/VENDA --- */
-        .mode-controls { display: flex; justify-content: space-between; margin-bottom: 5px; padding: 0 5px; }
-        .mode-btn { background: none; border: none; color: #777; font-weight: bold; font-size: 0.9rem; cursor: pointer; text-transform: uppercase; padding-bottom: 2px; font-family: 'Fredoka One', cursive; transition: 0.2s; }
+        .mode-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            padding: 0 5px;
+        }
+
+        .mode-btn {
+            background: none;
+            border: none;
+            color: #777;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            padding-bottom: 2px;
+            font-family: 'Fredoka One', cursive;
+            transition: 0.2s;
+        }
+
         .mode-btn:hover { color: #aaa; }
-        .mode-btn.active { color: #fff; border-bottom: 2px solid #fff; }
-        .mode-btn.sell-active { color: var(--red); border-bottom: 2px solid var(--red); }
-
-        .store-tabs { display: flex; gap: 5px; margin-bottom: 10px; background: #222; padding: 3px; border-radius: 8px; }
-        .tab-btn { flex: 1; padding: 8px; border: none; background: transparent; color: #888; cursor: pointer; font-weight: bold; border-radius: 5px; }
-        .tab-btn.active { background: var(--btn-bg); color: var(--accent-color); }
-        .tab-btn.special-tab { color: var(--gold); }
-        .tab-btn.special-tab.active { background: #3c3518; color: var(--gold); border: 1px solid var(--gold); }
-
-        #store-container { flex: 1; overflow-y: auto; }
         
-        .upgrade-item { background: var(--btn-bg); margin-bottom: 10px; padding: 15px; border-radius: 8px; display: flex; align-items: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; }
-        .upgrade-item:hover { background: #5c4a56; border-color: rgba(255, 204, 0, 0.3); }
-        .upgrade-item.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.8); }
-        .upgrade-item.sell-mode { border-color: rgba(255, 69, 58, 0.3); }
-        .upgrade-item.sell-mode:hover { background-color: #452b2b; border-color: var(--red); }
-        .upgrade-item.purchased { opacity: 1 !important; cursor: default; }
+        .mode-btn.active {
+            color: #fff;
+            border-bottom: 2px solid #fff;
+        }
 
-        /* Custo especial */
-        .upgrade-cost.sachet { color: var(--gold); }
+        .mode-btn.sell-active {
+            color: var(--red);
+            border-bottom: 2px solid var(--red);
+        }
+
+        /* --- CONTROLE DE MULTIPLICADOR --- */
+        .buy-controls {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 10px;
+            padding: 5px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+
+        .buy-multiplier {
+            background: transparent;
+            border: 1px solid #555;
+            color: #888;
+            padding: 2px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .buy-multiplier:hover {
+            border-color: #888;
+            color: #ccc;
+        }
+
+        .buy-multiplier.active {
+            background: var(--btn-bg);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        /* --- ABAS DA LOJA --- */
+        .store-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            background-color: #222;
+            padding: 3px;
+            border-radius: 8px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            background: transparent;
+            color: #888;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: 0.2s;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.85rem;
+        }
+
+        .tab-btn:hover {
+            background-color: rgba(255,255,255,0.05);
+            color: #ccc;
+        }
+
+        .tab-btn.active {
+            background-color: var(--btn-bg);
+            color: var(--accent-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        #store-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        #store-container::-webkit-scrollbar { width: 8px; }
+        #store-container::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        #store-container::-webkit-scrollbar-track { background: #2c2c2e; }
+
+        .upgrade-item {
+            background-color: var(--btn-bg);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .upgrade-item:hover {
+            background-color: #5c4a56;
+            transform: translateX(-2px);
+            border-color: rgba(255, 204, 0, 0.3);
+        }
+
+        /* Estilo para modo Venda */
+        .upgrade-item.sell-mode {
+            border-color: rgba(255, 69, 58, 0.3);
+        }
+        .upgrade-item.sell-mode:hover {
+            background-color: #452b2b;
+            border-color: var(--red);
+        }
+
+        .upgrade-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(0.8);
+            box-shadow: none;
+        }
+
+        /* Estilo especial para itens comprados (Boosts) */
+        .upgrade-item.purchased {
+            background-color: #2a3c2a;
+            border-color: var(--green);
+            opacity: 0.8;
+            cursor: default;
+        }
+        .upgrade-item.purchased:hover {
+            transform: none;
+        }
+
+        .upgrade-info h3 { font-size: 1.1rem; margin-bottom: 4px; font-weight: bold; }
+        .upgrade-info p { font-size: 0.9rem; color: #aaa; }
+        .upgrade-cost { font-weight: bold; color: var(--green); }
+        .upgrade-count { font-size: 1.8rem; font-weight: bold; color: rgba(255,255,255,0.15); min-width: 40px; text-align: center;}
+        
+        /* Texto roxo para custos de acessórios */
+        .upgrade-cost.rare { color: var(--purple); }
+        /* Texto verde para reembolso (venda) */
         .upgrade-cost.refund { color: var(--green); }
+        /* Texto vermelho para custo normal */
+        .upgrade-cost.price { color: var(--red); }
+
+        .controls { margin-top: 2rem; display: flex; gap: 10px; }
         
-        .buy-controls { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; padding: 5px; background: rgba(0,0,0,0.2); border-radius: 8px; }
-        .buy-multiplier { background: transparent; border: 1px solid #555; color: #888; padding: 2px 10px; cursor: pointer; border-radius: 4px; }
-        .buy-multiplier.active { background: var(--btn-bg); border-color: var(--accent-color); color: var(--accent-color); }
-        
-        /* Toast Notification */
-        .achievement-toast {
-            position: fixed; top: 20px; right: -350px; background: var(--panel-color); border: 2px solid var(--accent-color);
-            padding: 15px; border-radius: 10px; display: flex; gap: 15px; z-index: 4000; transition: right 0.5s; width: 300px;
+        .util-btn {
+            background: transparent;
+            border: 2px solid #555;
+            color: #ccc;
+            padding: 10px 24px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.2s;
         }
-        .achievement-toast.show { right: 20px; }
         
-        /* Floating Number */
-        .floating-number { position: absolute; color: var(--accent-color); font-weight: bold; font-size: 1.8rem; pointer-events: none; animation: floatUp 1s forwards; text-shadow: 2px 2px 0 #000; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-80px); } }
+        .util-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: #fff; }
         
-        /* Animation Restored */
-        @keyframes floatMascot {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+        .util-btn.danger { border-color: #883333; color: #cc6666; }
+        .util-btn.danger:hover { background: var(--red); border-color: var(--red); color: white; }
+
+        /* Estilo específico para o botão de Reset no canto */
+        #reset-btn {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            font-size: 0.8rem;
+            padding: 8px 15px;
+            opacity: 0.6;
+            z-index: 100;
+        }
+        
+        #reset-btn:hover {
+            opacity: 1;
         }
 
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        #message-log {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #ffcc00;
+            height: 24px;
+            font-style: italic;
+            text-align: center;
+            transition: opacity 0.3s;
+        }
 
-        /* Lista scrollável */
-        .scrollable-list { text-align: left; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; max-height: 250px; overflow-y: auto; }
-        .scrollable-list::-webkit-scrollbar { width: 6px; }
-        .scrollable-list::-webkit-scrollbar-thumb { background: #555; }
+        @media (max-width: 768px) {
+            .game-container { flex-direction: column; overflow-y: auto; }
+            .store-section { width: 100%; height: auto; padding-bottom: 40px; }
+            .bakery-section { min-height: 70vh; border-right: none; border-bottom: 2px solid #000; }
+            
+            .start-content h1 { font-size: 2.5rem; }
+            .cat-mascot { font-size: 5rem; }
+            #score-display { font-size: 2.5rem; }
+            .cat-clicker { font-size: 10rem; }
+        }
     </style>
 </head>
 <body>
-
-    <!-- NOTIFICAÇÃO -->
-    <div id="achievement-toast" class="achievement-toast">
-        <div style="font-size: 2.5rem;">🏆</div>
-        <div>
-            <h4 style="color:var(--accent-color); margin-bottom:5px;">Conquista!</h4>
-            <p id="toast-text" style="color:#ccc; font-size:0.9rem;">Nome</p>
-        </div>
-    </div>
 
     <!-- TELA INICIAL -->
     <div id="start-screen" class="start-screen">
         <div class="start-content">
             <h1>Mestre dos Gatos 🐾</h1>
-            <p>Ascenda, Pesque e Domine!</p>
+            <p>Faça carinho, colete ronrons e domine o universo felino!</p>
             <div class="cat-mascot">🐱</div>
             <br>
             <button id="start-btn">COMEÇAR A JOGAR</button>
         </div>
     </div>
 
-    <!-- MODAL OFFLINE EARNINGS -->
-    <div id="offline-modal" class="modal-overlay hidden">
-        <div class="modal offline-theme">
-            <h3>Bem-vindo de volta! 🌙</h3>
-            <p>Enquanto você dormia, seus gatos trabalharam.</p>
-            <div style="background: rgba(76,217,100,0.1); padding: 15px; border-radius: 10px; margin: 20px 0;">
-                <p>Tempo Ausente: <span id="offline-time" style="color: #fff;">0s</span></p>
-                <p style="font-size: 1.5rem; margin-top: 10px;">Ganhou: <span id="offline-earnings" style="color: var(--green); font-weight: bold;">0</span> Ronrons</p>
-            </div>
-            <button id="close-offline-btn" class="util-btn" style="margin: 0 auto; border-color: var(--green); color: var(--green);">Coletar</button>
-        </div>
-    </div>
-
-    <!-- MODAL ASCENSÃO (PRESTÍGIO) -->
-    <div id="ascend-modal" class="modal-overlay hidden">
-        <div class="modal ascend-theme">
-            <h3>Ascensão Felina 🌀</h3>
-            <p>Resete seu progresso (Prédios, Mimos e Ronrons) para ganhar Karma.</p>
-            <p>Cada ponto de Karma aumenta sua produção em <strong>+10%</strong> permanentemente.</p>
-            <div style="background: rgba(0,229,255,0.1); padding: 15px; border-radius: 10px; margin: 20px 0;">
-                <p>Karma Atual: <span id="current-karma-display" style="color: var(--karma-color); font-weight: bold;">0</span></p>
-                <p>Ao Ascender você ganha: <span id="pending-karma-display" style="color: #fff; font-weight: bold; font-size: 1.5rem;">+0</span> 🌀</p>
-            </div>
-            <div class="modal-buttons">
-                <button id="confirm-ascend-btn" class="util-btn ascend">ASCENDER AGORA</button>
-                <button id="cancel-ascend-btn" class="util-btn">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL PESCARIA -->
-    <div id="fishing-modal" class="modal-overlay hidden">
-        <div class="modal">
-            <h3 style="color: var(--gold);">Pescaria da Sorte 🎣</h3>
-            <p>Clique em "PESCAR!" quando a barra branca estiver na área verde.</p>
-            
-            <div class="fishing-area">
-                <div id="fishing-target" class="fishing-target"></div>
-                <div id="fishing-bar" class="fishing-bar"></div>
-            </div>
-            
-            <p id="fishing-status" style="height: 20px; color: #aaa;">Aguardando...</p>
-
-            <div class="modal-buttons">
-                <button id="action-fish-btn" class="util-btn fish-btn" style="font-size: 1.2rem; padding: 10px 40px;">PESCAR!</button>
-                <button id="close-fish-btn" class="util-btn">Sair</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL STATS -->
+    <!-- MODAL DE ESTATÍSTICAS -->
     <div id="stats-modal" class="modal-overlay hidden">
         <div class="modal">
             <h3>Estatísticas 📊</h3>
-            <div id="stats-content" class="scrollable-list"></div>
+            <div id="stats-content" class="stats-list">
+                <!-- Conteúdo gerado via JS -->
+            </div>
             <button id="close-stats-btn" class="util-btn">Fechar</button>
         </div>
     </div>
 
-    <!-- MODAL CONQUISTAS -->
-    <div id="achievements-modal" class="modal-overlay hidden">
-        <div class="modal">
-            <h3>Conquistas 🏆</h3>
-            <div id="achievements-content" class="scrollable-list"></div>
-            <button id="close-achievements-btn" class="util-btn">Fechar</button>
+    <!-- MODAL DE ONLINE/OFFLINE -->
+    <div id="offline-modal" class="modal-overlay hidden">
+        <div class="modal offline-theme">
+            <h3>Bem-vindo de volta! 🌙</h3>
+            <p>Seus gatos continuaram ronronando enquanto você estava fora.</p>
+            <div style="margin: 20px 0; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px;">
+                <p style="font-size: 0.9rem; margin-bottom: 5px; color: #aaa;">Você ficou fora por:</p>
+                <p id="offline-time" style="font-size: 1.2rem; color: #fff; font-weight: bold;">0s</p>
+                <br>
+                <p style="font-size: 0.9rem; margin-bottom: 5px; color: #aaa;">Seus gatos geraram:</p>
+                <p id="offline-earnings" style="font-size: 2.5rem; color: var(--purple); font-weight: bold; text-shadow: 0 0 15px rgba(191, 90, 242, 0.4);">+0</p>
+            </div>
+            <div class="modal-buttons">
+                <button id="close-offline-btn" class="util-btn" style="background-color: var(--purple); color: #fff; border: none; padding: 10px 30px; font-size: 1.1rem;">Coletar Ronrons</button>
+            </div>
         </div>
     </div>
-    
-    <!-- MODAL RESET GERAL -->
+
+    <!-- MODAL DE RESET -->
     <div id="reset-modal" class="modal-overlay hidden">
         <div class="modal">
-            <h3 style="color: var(--red);">Reset Completo</h3>
-            <p>Isso apaga TUDO, inclusive Karma e Conquistas. Tem certeza?</p>
+            <h3>⚠️ Atenção</h3>
+            <p>Quer mesmo abandonar seus gatos? Todo o progresso será perdido para sempre.</p>
             <div class="modal-buttons">
-                <button id="confirm-reset" class="util-btn danger">Apagar Tudo</button>
+                <button id="confirm-reset" class="util-btn danger">Sim, Resetar</button>
                 <button id="cancel-reset" class="util-btn">Cancelar</button>
             </div>
         </div>
@@ -416,24 +558,8 @@
 
     <!-- JOGO PRINCIPAL -->
     <div class="game-container">
-        
-        <!-- Área de Frenesi -->
-        <div id="frenzy-overlay" class="frenzy-overlay">
-            <div class="frenzy-text">FRENESI DE OURO! (7x)</div>
-        </div>
-
+        <!-- Seção Esquerda: O Gato e Status -->
         <section class="bakery-section">
-            
-            <!-- Mostradores Especiais -->
-            <div class="currency-bar">
-                <div class="currency-item karma-display" title="Karma: +10% de Bônus por ponto">
-                    <span>🌀</span> <span id="hud-karma">0</span>
-                </div>
-                <div class="currency-item sachet-display" title="Sachês de Ouro: Moeda Rara">
-                    <span>🎒</span> <span id="hud-sachets">0</span>
-                </div>
-            </div>
-
             <div class="stats-header">
                 <h1 id="score-display">0 Ronrons</h1>
                 <p id="cps-display">por segundo: 0.0</p>
@@ -441,33 +567,31 @@
             </div>
 
             <div class="clicker-container">
+                <!-- O Gato Gigante (Emoji) -->
                 <div id="big-cat" class="cat-clicker">🐱</div>
             </div>
             
             <div class="controls">
                 <button id="save-btn" class="util-btn">💾 Salvar</button>
-                <button id="ascend-btn" class="util-btn ascend">🌀 Ascender</button>
-                <button id="fish-btn" class="util-btn fish-btn">🎣 Pescar</button>
-            </div>
-            <div id="message-log">Faça carinho no gato!</div>
-
-            <!-- Painel Inferior -->
-            <div class="bottom-left-panel">
                 <button id="stats-btn" class="util-btn">📊 Stats</button>
-                <button id="achievements-btn" class="util-btn">🏆 Conquistas</button>
-                <button id="reset-btn" class="util-btn danger">🗑️ Hard Reset</button>
             </div>
+            <div id="message-log">Comece a fazer carinho no gato!</div>
+
+            <!-- Botão de Reset -->
+            <button id="reset-btn" class="util-btn danger">🗑️ Resetar</button>
         </section>
 
-        <!-- LOJA -->
+        <!-- Seção Direita: Pet Shop -->
         <section class="store-section">
             <h2>Pet Shop</h2>
 
+            <!-- CONTROLE DE MODO (COMPRAR / VENDER) -->
             <div class="mode-controls">
                 <button id="btn-mode-buy" class="mode-btn active" onclick="setSellMode(false)">Comprar</button>
                 <button id="btn-mode-sell" class="mode-btn" onclick="setSellMode(true)">Vender</button>
             </div>
 
+            <!-- CONTROLE DE MULTIPLICADOR DE COMPRA -->
             <div class="buy-controls">
                 <button class="buy-multiplier active" onclick="setBuyMultiplier(1)">1x</button>
                 <button class="buy-multiplier" onclick="setBuyMultiplier(5)">5x</button>
@@ -475,51 +599,48 @@
                 <button class="buy-multiplier" onclick="setBuyMultiplier('MAX')">Máx</button>
             </div>
 
+            <!-- Abas de Navegação -->
             <div class="store-tabs">
-                <button id="tab-buildings" class="tab-btn active">Prédios</button>
+                <button id="tab-buildings" class="tab-btn active">Ronronadores</button>
                 <button id="tab-upgrades" class="tab-btn">Mimos</button>
                 <button id="tab-boosts" class="tab-btn">Acessórios</button>
-                <button id="tab-specials" class="tab-btn special-tab">Especiais</button>
             </div>
-            <div id="store-container"></div>
+            <div id="store-container">
+                <!-- Os itens serão gerados pelo JavaScript aqui -->
+            </div>
         </section>
     </div>
 
     <script>
+        // --- Configuração Inicial ---
         const gameState = {
             score: 0,
             totalScoreAccumulated: 0,
             cps: 0,
             clickValue: 1,
             activeTab: 'buildings',
-            buyMultiplier: 1,
+            buyMultiplier: 1, // 1, 5, 10 ou 'MAX'
             sellMode: false,
-            clickHistory: [], // Histórico para calcular CPS de clique
+            clickHistory: [], 
             lastSaveTime: Date.now(),
             
-            // Stats
+            // Novas Estatísticas
             startTime: Date.now(),
             totalClicks: 0,
-            
-            // Novos Recursos
-            karma: 0,
-            goldenSachets: 0,
-            prestigeCount: 0,
-            
-            // Variáveis Temporárias (não salvas)
-            bonusMultiplier: 1, 
             
             buildings: [
                 { id: 0, name: "Petisco", baseCost: 15, cps: 0.1, count: 0, icon: "🐟" },
                 { id: 1, name: "Caixa de Papelão", baseCost: 100, cps: 1, count: 0, icon: "📦" },
                 { id: 2, name: "Arranhador", baseCost: 1100, cps: 8, count: 0, icon: "🧶" },
-                { id: 3, name: "Catnip", baseCost: 12000, cps: 47, count: 0, icon: "🌿" },
+                { id: 3, name: "Catnip (Erva)", baseCost: 12000, cps: 47, count: 0, icon: "🌿" },
                 { id: 4, name: "Fábrica de Sachê", baseCost: 130000, cps: 260, count: 0, icon: "🏭" },
                 { id: 5, name: "Santuário Felino", baseCost: 1400000, cps: 1400, count: 0, icon: "⛩️" },
                 { id: 6, name: "Planeta dos Gatos", baseCost: 20000000, cps: 7800, count: 0, icon: "🪐" },
+                // Novos Prédios de Tier Alto
                 { id: 7, name: "Dimensão Gatástica", baseCost: 500000000000, cps: 500000, count: 0, icon: "🌌" },
                 { id: 8, name: "Deus Gato", baseCost: 100000000000000, cps: 10000000, count: 0, icon: "🔱" }
             ],
+
             clickItems: [
                 { id: 100, name: "Unha Postiça", baseCost: 500, clickIncrease: 1, count: 0, icon: "💅" },
                 { id: 101, name: "Laser Pointer", baseCost: 2500, clickIncrease: 5, count: 0, icon: "🔦" },
@@ -529,7 +650,9 @@
                 { id: 105, name: "Manopla do Infinito", baseCost: 50000000, clickIncrease: 5000, count: 0, icon: "💎" },
                 { id: 106, name: "Dedo de Midas", baseCost: 1000000000, clickIncrease: 25000, count: 0, icon: "👑" }
             ],
+
             boosts: [
+                // Ordenado por PREÇO (Crescente)
                 { id: 200, name: "Salmão Fresco", baseCost: 1000, targetId: 0, targetType: 'building', multiplier: 2, count: 0, icon: "🍣", desc: "Petiscos geram 2x mais" },
                 { id: 300, name: "Esmalte Brilhante", baseCost: 2500, targetId: 100, targetType: 'click', multiplier: 2, count: 0, icon: "💅✨", desc: "Unhas dão 2x mais" },
                 { id: 201, name: "Papelão Reforçado", baseCost: 5000, targetId: 1, targetType: 'building', multiplier: 2, count: 0, icon: "📦", desc: "Caixas geram 2x mais" },
@@ -556,184 +679,229 @@
                 { id: 216, name: "Galáxia de Leite", baseCost: 5000000000, targetId: 6, targetType: 'building', multiplier: 2, count: 0, icon: "🥛", desc: "Planetas geram +2x" },
                 { id: 220, name: "Dobra Espacial", baseCost: 5000000000000, targetId: 7, targetType: 'building', multiplier: 2, count: 0, icon: "🌀", desc: "Dimensões geram 2x mais" },
                 { id: 221, name: "Oferenda Cósmica", baseCost: 1000000000000000, targetId: 8, targetType: 'building', multiplier: 2, count: 0, icon: "🪐", desc: "Deuses geram 2x mais" }
-            ],
-            specials: [
-                { id: 900, name: "Aura Dourada", costSachets: 1, multiplier: 1.5, count: 0, icon: "🌟", desc: "Multiplica TODO o CPS por 1.5x (Global)" },
-                { id: 901, name: "Pescador Mestre", costSachets: 3, multiplier: 1, count: 0, icon: "🎣", desc: "Melhora a chance na pesca (Passivo)" },
-                { id: 902, name: "Reencarnação Veloz", costSachets: 5, multiplier: 2, count: 0, icon: "⏩", desc: "Ganha 2x mais Karma ao ascender" }
-            ],
-            achievements: [
-                { id: 'click1', name: "Primeiro Carinho", desc: "Clique no gato 1 vez.", icon: "👆", unlocked: false, check: (s) => s.totalClicks >= 1 },
-                { id: 'click100', name: "Amante de Gatos", desc: "100 Cliques", icon: "😻", unlocked: false, check: (s) => s.totalClicks >= 100 },
-                { id: 'click1000', name: "Dedo Furioso", desc: "Clique no gato 1.000 vezes.", icon: "⚡", unlocked: false, check: (s) => s.totalClicks >= 1000 },
-                { id: 'score1000', name: "Ronronando", desc: "Acumule 1.000 Ronrons no total.", icon: "🧶", unlocked: false, check: (s) => s.totalScoreAccumulated >= 1000 },
-                { id: 'score1m', name: "Milionário", desc: "1 Milhão de Ronrons", icon: "💰", unlocked: false, check: (s) => s.totalScoreAccumulated >= 1000000 },
-                { id: 'score1b', name: "Bilionário", desc: "1 Bilhão de Ronrons", icon: "🏦", unlocked: false, check: (s) => s.totalScoreAccumulated >= 1000000000 },
-                { id: 'cps100', name: "Linha de Produção", desc: "Alcance 100 Ronrons por segundo.", icon: "🏭", unlocked: false, check: (s) => s.cps >= 100 },
-                { id: 'build10', name: "Imobiliária", desc: "Tenha 10 construções no total.", icon: "🏗️", unlocked: false, check: (s) => s.buildings.reduce((a,b)=>a+b.count,0) >= 10 },
-                { id: 'build50', name: "Império", desc: "Tenha 50 construções no total.", icon: "🏰", unlocked: false, check: (s) => s.buildings.reduce((a,b)=>a+b.count,0) >= 50 },
-                { id: 'karma1', name: "Iluminado", desc: "Consiga 1 ponto de Karma", icon: "🌀", unlocked: false, check: (s) => s.karma >= 1 },
-                { id: 'sachet1', name: "Tesouro", desc: "Pesque 1 Sachê de Ouro", icon: "🎒", unlocked: false, check: (s) => s.goldenSachets >= 1 }
             ]
         };
 
+        // --- Elementos do DOM ---
         const elements = {
-            // Displays
             scoreDisplay: document.getElementById('score-display'),
             cpsDisplay: document.getElementById('cps-display'),
             clickPowerDisplay: document.getElementById('click-power-display'),
-            hudKarma: document.getElementById('hud-karma'),
-            hudSachets: document.getElementById('hud-sachets'),
-            
-            // Game Objects
             bigCat: document.getElementById('big-cat'),
             storeContainer: document.getElementById('store-container'),
-            frenzyOverlay: document.getElementById('frenzy-overlay'),
-            
-            // Buttons
-            ascendBtn: document.getElementById('ascend-btn'),
-            fishBtn: document.getElementById('fish-btn'),
-            statsBtn: document.getElementById('stats-btn'),
-            achievementsBtn: document.getElementById('achievements-btn'),
-            resetBtn: document.getElementById('reset-btn'),
+            msgLog: document.getElementById('message-log'),
             saveBtn: document.getElementById('save-btn'),
-            
-            // Modals
-            ascendModal: document.getElementById('ascend-modal'),
-            fishingModal: document.getElementById('fishing-modal'),
-            statsModal: document.getElementById('stats-modal'),
-            achievementsModal: document.getElementById('achievements-modal'),
+            statsBtn: document.getElementById('stats-btn'),
+            resetBtn: document.getElementById('reset-btn'),
+            title: document.querySelector('title'),
+            // Tela Inicial
+            startScreen: document.getElementById('start-screen'),
+            startBtn: document.getElementById('start-btn'),
+            // Modal Reset
             resetModal: document.getElementById('reset-modal'),
-            offlineModal: document.getElementById('offline-modal'), // Novo
-            
-            // Modal Elements
-            currentKarmaDisplay: document.getElementById('current-karma-display'),
-            pendingKarmaDisplay: document.getElementById('pending-karma-display'),
-            confirmAscendBtn: document.getElementById('confirm-ascend-btn'),
-            cancelAscendBtn: document.getElementById('cancel-ascend-btn'),
-            
-            fishingBar: document.getElementById('fishing-bar'),
-            fishingTarget: document.getElementById('fishing-target'),
-            fishingStatus: document.getElementById('fishing-status'),
-            actionFishBtn: document.getElementById('action-fish-btn'),
-            closeFishBtn: document.getElementById('close-fish-btn'),
-            
-            closeStatsBtn: document.getElementById('close-stats-btn'),
-            closeAchievementsBtn: document.getElementById('close-achievements-btn'),
             confirmResetBtn: document.getElementById('confirm-reset'),
             cancelResetBtn: document.getElementById('cancel-reset'),
-            
-            // Offline Elements
+            // Modal Offline
+            offlineModal: document.getElementById('offline-modal'),
             offlineTimeDisplay: document.getElementById('offline-time'),
             offlineEarningsDisplay: document.getElementById('offline-earnings'),
             closeOfflineBtn: document.getElementById('close-offline-btn'),
-            
-            // Listas
+            // Modal Stats
+            statsModal: document.getElementById('stats-modal'),
             statsContent: document.getElementById('stats-content'),
-            achievementsContent: document.getElementById('achievements-content'),
-            
-            // Tabs
+            closeStatsBtn: document.getElementById('close-stats-btn'),
+            // Abas
             tabBuildings: document.getElementById('tab-buildings'),
             tabUpgrades: document.getElementById('tab-upgrades'),
             tabBoosts: document.getElementById('tab-boosts'),
-            tabSpecials: document.getElementById('tab-specials'),
-            
+            // Multiplicadores e Modos
             multiplierBtns: document.querySelectorAll('.buy-multiplier'),
             btnModeBuy: document.getElementById('btn-mode-buy'),
-            btnModeSell: document.getElementById('btn-mode-sell'),
-            startScreen: document.getElementById('start-screen'),
-            startBtn: document.getElementById('start-btn'),
-            msgLog: document.getElementById('message-log') 
+            btnModeSell: document.getElementById('btn-mode-sell')
         };
 
-        // --- Variáveis de Sistema ---
-        let fishingInterval = null;
-        let fishingPosition = 0;
-        let fishingDirection = 1;
-        let fishingSpeed = 2;
-        let fishBonusTimeout = null;
-        let lastFishSpawn = Date.now();
-        let catnipRainActive = false; // Estado do evento de chuva
+        // --- Funções Principais ---
 
         function init() {
             loadGame();
+            
             updateTabVisuals();
             renderStore();
             
+            // Loops
             setInterval(gameLoop, 100); 
-            setInterval(checkAchievements, 1000); 
-            setInterval(trySpawnGoldenFish, 1000); 
-            setInterval(trySpawnLuckyCat, 1000); // Checa Gato da Sorte
-            setInterval(trySpawnCatnipRain, 1000); // Checa Chuva de Catnip
 
-            // Auto-Save
-            setInterval(() => { saveGame(); showMessage("Salvo! 💾"); }, 30000); 
+            // Save Automático
+            setInterval(() => {
+                saveGame();
+                showMessage("Jogo salvo automaticamente 💾"); 
+            }, 30000); 
 
-            // Event Listeners
+            window.addEventListener('beforeunload', () => {
+                saveGame();
+            });
+            
+            // Eventos
             elements.bigCat.addEventListener('click', handleCatClick);
-            elements.saveBtn.addEventListener('click', () => { saveGame(); showMessage("Salvo!"); });
+            elements.saveBtn.addEventListener('click', () => { saveGame(); showMessage("Progresso salvo manualmente!"); });
+            elements.statsBtn.addEventListener('click', showStatsModal);
+            
+            // Modais
+            elements.resetBtn.addEventListener('click', () => {
+                elements.resetModal.classList.remove('hidden');
+                elements.resetModal.style.opacity = 1;
+            });
+            elements.cancelResetBtn.addEventListener('click', () => {
+                elements.resetModal.classList.add('hidden');
+            });
+            elements.confirmResetBtn.addEventListener('click', performReset);
+            
+            // Botão do Modal Offline
+            elements.closeOfflineBtn.addEventListener('click', () => {
+                elements.offlineModal.classList.add('hidden');
+            });
+
+            // Botão do Modal Stats
+            elements.closeStatsBtn.addEventListener('click', () => {
+                elements.statsModal.classList.add('hidden');
+            });
+            
             elements.startBtn.addEventListener('click', startGame);
 
-            // Modais UI
-            setupModalTriggers();
-            
-            // Store Tabs
+            // Abas
             elements.tabBuildings.addEventListener('click', () => switchTab('buildings'));
             elements.tabUpgrades.addEventListener('click', () => switchTab('upgrades'));
             elements.tabBoosts.addEventListener('click', () => switchTab('boosts'));
-            elements.tabSpecials.addEventListener('click', () => switchTab('specials'));
         }
 
         function startGame() {
             elements.startScreen.classList.add('hidden');
         }
 
-        function setupModalTriggers() {
-            // Ascend
-            elements.ascendBtn.addEventListener('click', openAscendModal);
-            elements.confirmAscendBtn.addEventListener('click', performAscend);
-            elements.cancelAscendBtn.addEventListener('click', () => elements.ascendModal.classList.add('hidden'));
-
-            // Fishing
-            elements.fishBtn.addEventListener('click', openFishingModal);
-            elements.actionFishBtn.addEventListener('click', catchFish);
-            elements.closeFishBtn.addEventListener('click', closeFishingModal);
-
-            // Stats & Achievements
-            elements.statsBtn.addEventListener('click', showStatsModal);
-            elements.closeStatsBtn.addEventListener('click', () => elements.statsModal.classList.add('hidden'));
-            elements.achievementsBtn.addEventListener('click', showAchievementsModal);
-            elements.closeAchievementsBtn.addEventListener('click', () => elements.achievementsModal.classList.add('hidden'));
-
-            // Reset
-            elements.resetBtn.addEventListener('click', () => elements.resetModal.classList.remove('hidden'));
-            elements.confirmResetBtn.addEventListener('click', performHardReset);
-            elements.cancelResetBtn.addEventListener('click', () => elements.resetModal.classList.add('hidden'));
+        function showStatsModal() {
+            const timePlayed = Date.now() - gameState.startTime;
             
-            // Offline
-            elements.closeOfflineBtn.addEventListener('click', () => elements.offlineModal.classList.add('hidden'));
+            // Formata tempo
+            const hours = Math.floor(timePlayed / 3600000);
+            const minutes = Math.floor((timePlayed % 3600000) / 60000);
+            const seconds = Math.floor((timePlayed % 60000) / 1000);
+            
+            let timeString = "";
+            if(hours > 0) timeString += `${hours}h `;
+            if(minutes > 0) timeString += `${minutes}m `;
+            timeString += `${seconds}s`;
+
+            // Totais
+            const totalBuildings = gameState.buildings.reduce((acc, b) => acc + b.count, 0);
+            const totalUpgrades = gameState.clickItems.reduce((acc, i) => acc + i.count, 0);
+            const totalBoosts = gameState.boosts.reduce((acc, b) => acc + b.count, 0);
+
+            // Gera HTML
+            elements.statsContent.innerHTML = `
+                <div class="stat-row">
+                    <span class="stat-label">Ronrons Atuais:</span>
+                    <span class="stat-value">${formatNumber(gameState.score)}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Ronrons Totais (Histórico):</span>
+                    <span class="stat-value">${formatNumber(gameState.totalScoreAccumulated)}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Cliques no Gato:</span>
+                    <span class="stat-value">${formatNumber(gameState.totalClicks)}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Tempo de Jogo:</span>
+                    <span class="stat-value">${timeString}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Ronronadores:</span>
+                    <span class="stat-value">${totalBuildings}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Mimos Comprados:</span>
+                    <span class="stat-value">${totalUpgrades}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Acessórios Desbloqueados:</span>
+                    <span class="stat-value">${totalBoosts}/${gameState.boosts.length}</span>
+                </div>
+            `;
+
+            elements.statsModal.classList.remove('hidden');
         }
 
-        // --- LÓGICA DO JOGO ---
+        // --- Função para Alternar Modo (Comprar/Vender) ---
+        function setSellMode(isSell) {
+            gameState.sellMode = isSell;
+            
+            if (isSell) {
+                elements.btnModeBuy.classList.remove('active');
+                elements.btnModeSell.classList.add('sell-active');
+            } else {
+                elements.btnModeBuy.classList.add('active');
+                elements.btnModeSell.classList.remove('sell-active');
+            }
+            renderStore();
+        }
+
+        function setBuyMultiplier(value) {
+            gameState.buyMultiplier = value;
+            
+            // Atualiza visual dos botões
+            elements.multiplierBtns.forEach(btn => {
+                if (
+                    (value === 'MAX' && btn.textContent === 'Máx') ||
+                    (parseInt(btn.textContent) === value)
+                ) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            renderStore();
+        }
+
+        function switchTab(tabName) {
+            gameState.activeTab = tabName;
+            updateTabVisuals();
+            renderStore();
+        }
+
+        function updateTabVisuals() {
+            elements.tabBuildings.classList.remove('active');
+            elements.tabUpgrades.classList.remove('active');
+            elements.tabBoosts.classList.remove('active');
+
+            if (gameState.activeTab === 'buildings') {
+                elements.tabBuildings.classList.add('active');
+            } else if (gameState.activeTab === 'upgrades') {
+                elements.tabUpgrades.classList.add('active');
+            } else {
+                elements.tabBoosts.classList.add('active');
+            }
+        }
+
+        function handleCatClick(e) {
+            addScore(gameState.clickValue);
+            
+            gameState.clickHistory.push(Date.now());
+            gameState.totalClicks = (gameState.totalClicks || 0) + 1; // Incrementa estatística
+
+            const msgs = ["+1", "Miau!", "Prrr", "❤️"];
+            const text = msgs[Math.floor(Math.random() * msgs.length)];
+            const displayText = text === "+1" ? `+${formatNumber(gameState.clickValue)}` : text;
+            
+            createParticles(e.clientX, e.clientY, displayText);
+        }
 
         function gameLoop() {
             if (gameState.cps > 0) {
-                // Aplica multiplicador de bônus (peixe) e karma
-                let earnings = (gameState.cps * getGlobalMultiplier()) / 10;
-                addScore(earnings);
+                const earned = gameState.cps / 10;
+                addScore(earned);
             }
             updateUI();
-        }
-
-        function getGlobalMultiplier() {
-            // Base + Karma (10% por ponto) + Bonus (Peixe) + Especiais
-            let karmaMulti = 1 + (gameState.karma * 0.1);
-            let specialMulti = 1;
-            
-            // Aura Dourada
-            if(gameState.specials[0].count > 0) specialMulti *= (1.5 ** gameState.specials[0].count);
-
-            return karmaMulti * gameState.bonusMultiplier * specialMulti;
         }
 
         function addScore(amount) {
@@ -741,61 +909,81 @@
             gameState.totalScoreAccumulated += amount;
         }
 
-        function handleCatClick(e) {
-            // Rastreia cliques para o CPS dinâmico
-            gameState.clickHistory.push(Date.now());
-            
-            let clickVal = gameState.clickValue * getGlobalMultiplier();
-            addScore(clickVal);
-            
-            gameState.totalClicks++;
-            createParticles(e.clientX, e.clientY, `+${formatNumber(clickVal)}`);
-        }
-
         function updateUI() {
-            let globalMulti = getGlobalMultiplier();
-            let passiveCPS = gameState.cps * globalMulti;
-
-            // Calcula CPS ativo (cliques no último segundo)
+            // CPS do Jogador
             const now = Date.now();
-            gameState.clickHistory = gameState.clickHistory.filter(t => now - t < 1000);
-            let activeCPS = gameState.clickHistory.length * (gameState.clickValue * globalMulti);
-            let totalCPS = passiveCPS + activeCPS;
+            gameState.clickHistory = gameState.clickHistory.filter(timestamp => now - timestamp <= 1000);
             
+            const playerCPS = gameState.clickHistory.length * gameState.clickValue;
+            const totalCPS = gameState.cps + playerCPS;
+
             elements.scoreDisplay.textContent = `${formatNumber(Math.floor(gameState.score))} Ronrons`;
+            elements.clickPowerDisplay.textContent = `poder de carinho: ${formatNumber(gameState.clickValue)}`;
             
-            // Display Combinado
-            if(activeCPS > 0) {
-                elements.cpsDisplay.innerHTML = `Total: ${formatNumber(totalCPS.toFixed(1))}/s<br><span style="font-size:0.7em; opacity:0.7;">(Auto: ${formatNumber(passiveCPS.toFixed(1))} + Click: ${formatNumber(activeCPS.toFixed(1))})</span>`;
+            if (playerCPS > 0) {
+                elements.cpsDisplay.textContent = `por segundo: ${formatNumber(totalCPS.toFixed(1))} (Auto: ${formatNumber(gameState.cps.toFixed(1))})`;
             } else {
-                elements.cpsDisplay.textContent = `por segundo: ${formatNumber(passiveCPS.toFixed(1))}`;
+                elements.cpsDisplay.textContent = `por segundo: ${formatNumber(gameState.cps.toFixed(1))}`;
             }
 
-            elements.clickPowerDisplay.textContent = `poder de carinho: ${formatNumber((gameState.clickValue * globalMulti).toFixed(1))}`;
-            
-            elements.hudKarma.textContent = formatNumber(gameState.karma);
-            elements.hudSachets.textContent = gameState.goldenSachets;
+            elements.title.textContent = `${formatNumber(Math.floor(gameState.score))} Ronrons - Gatos`;
 
-            // Update Store UI states
-            updateStoreButtons();
+            // Atualiza botões da loja
+            let activeList;
+            if (gameState.activeTab === 'buildings') activeList = gameState.buildings;
+            else if (gameState.activeTab === 'upgrades') activeList = gameState.clickItems;
+            else activeList = gameState.boosts;
+            
+            activeList.forEach(item => {
+                const btn = document.getElementById(`btn-item-${item.id}`);
+                if (btn) {
+                    if (gameState.activeTab === 'boosts') {
+                         if (item.count > 0) {
+                             btn.classList.add('purchased'); // Garante que visual de comprado persista
+                             return; 
+                         }
+                    }
+
+                    // Lógica para Habilitar/Desabilitar
+                    if (gameState.sellMode && gameState.activeTab !== 'boosts') {
+                         // No modo venda, habilita se tiver itens para vender
+                         const { refundAmount, count } = getBulkRefund(item, gameState.buyMultiplier);
+                         
+                         if (count > 0) {
+                             btn.classList.remove('disabled');
+                         } else {
+                             btn.classList.add('disabled');
+                         }
+
+                    } else {
+                        // Modo Compra
+                        if (gameState.activeTab === 'boosts') {
+                            const cost = item.baseCost;
+                            if (gameState.score >= cost) btn.classList.remove('disabled');
+                            else btn.classList.add('disabled');
+                        } else {
+                            const { totalCost } = getBulkCost(item, gameState.buyMultiplier);
+                            if (gameState.score >= totalCost) btn.classList.remove('disabled');
+                            else btn.classList.add('disabled');
+                        }
+                    }
+                }
+            });
         }
 
-        // --- LÓGICA DE PREÇOS EM MASSA ---
+        // --- Lógica de Compra e Venda em Lote ---
 
         function getBulkCost(item, multiplier) {
-            // Se for special, não usa multiplicador
-            if (gameState.activeTab === 'specials') return { totalCost: item.costSachets, count: 1 };
-
             let totalCost = 0;
             let count = 0;
+            
             let tempScore = gameState.score;
             let tempCount = item.count;
 
             if (multiplier === 'MAX') {
-                // Calcula quantos dá pra comprar
-                while (true) {
+                while (count < 1000) {
                     let nextPrice = Math.floor(item.baseCost * Math.pow(1.15, tempCount));
-                    if (tempScore >= nextPrice && count < 1000) { // Limit 1000 to prevent freeze
+                    if (tempScore >= nextPrice) {
                         totalCost += nextPrice;
                         tempScore -= nextPrice;
                         tempCount++;
@@ -804,7 +992,6 @@
                         break;
                     }
                 }
-                // Se não der pra comprar nenhum, mostra o custo do próximo
                 if (count === 0) {
                     totalCost = Math.floor(item.baseCost * Math.pow(1.15, item.count));
                 }
@@ -814,21 +1001,23 @@
                     totalCost += Math.floor(item.baseCost * Math.pow(1.15, tempCount + i));
                 }
             }
+            
             return { totalCost, count };
         }
 
         function getBulkRefund(item, multiplier) {
+            // Reembolso é 50% do custo de compra do item específico
             let refundAmount = 0;
             let count = 0;
             
-            // Quantos vender? Se MAX, vende tudo. Se não, vende X ou o que tiver.
+            // Se pedir pra vender 10 mas só tem 5, vende 5
             let itemsToSell = (multiplier === 'MAX') ? item.count : Math.min(item.count, multiplier);
             count = itemsToSell;
 
+            // Calcula reembolso do último comprado para baixo
             let tempCount = item.count; 
             
             for (let i = 0; i < itemsToSell; i++) {
-                // Preço que foi pago pelo item "tempCount - 1"
                 let originalCost = Math.floor(item.baseCost * Math.pow(1.15, tempCount - 1));
                 refundAmount += Math.floor(originalCost * 0.5);
                 tempCount--;
@@ -837,498 +1026,264 @@
             return { refundAmount, count };
         }
 
-        // --- SISTEMA DE ASCENSÃO (KARMA) ---
 
-        function openAscendModal() {
-            let potentialKarma = Math.floor(gameState.score / 1000000);
-            if(gameState.specials[2].count > 0) potentialKarma *= (2 * gameState.specials[2].count);
-
-            elements.currentKarmaDisplay.textContent = formatNumber(gameState.karma);
-            elements.pendingKarmaDisplay.textContent = `+${formatNumber(potentialKarma)}`;
-            elements.pendingKarmaDisplay.dataset.value = potentialKarma; // Guarda valor
-            
-            elements.ascendModal.classList.remove('hidden');
-        }
-
-        function performAscend() {
-            let karmaToGain = parseInt(elements.pendingKarmaDisplay.dataset.value);
-            
-            if (karmaToGain <= 0) {
-                showMessage("Precisa de 1M Ronrons para ganhar Karma!");
-                return;
-            }
-
-            // Preserva Itens Permanentes
-            let savedKarma = gameState.karma + karmaToGain;
-            let savedSachets = gameState.goldenSachets;
-            let savedSpecials = JSON.parse(JSON.stringify(gameState.specials));
-            let savedAchievements = JSON.parse(JSON.stringify(gameState.achievements));
-            let savedStats = {
-                startTime: gameState.startTime,
-                totalClicks: gameState.totalClicks,
-                prestigeCount: gameState.prestigeCount + 1,
-                totalScoreAccumulated: gameState.totalScoreAccumulated
-            };
-
-            localStorage.removeItem('catClickerSave');
-            resetGameStateToDefaults();
-            
-            gameState.karma = savedKarma;
-            gameState.goldenSachets = savedSachets;
-            gameState.specials = savedSpecials;
-            
-            savedAchievements.forEach(savedAch => {
-                 if(savedAch.unlocked) {
-                     const originalAch = gameState.achievements.find(a => a.id === savedAch.id);
-                     if(originalAch) originalAch.unlocked = true;
-                 }
-            });
-
-            Object.assign(gameState, savedStats);
-
-            saveGame();
-            
-            if(gameState.karma > 50) elements.bigCat.textContent = "😼"; 
-            if(gameState.karma > 500) elements.bigCat.textContent = "👾"; 
-            
-            elements.ascendModal.classList.add('hidden');
-            init(); 
-            showMessage("Ascensão Completa! 🌀");
-        }
-
-        // --- SISTEMA DE PESCA (SACHÊS) ---
-
-        function openFishingModal() {
-            elements.fishingModal.classList.remove('hidden');
-            startFishingGame();
-        }
-
-        function closeFishingModal() {
-            elements.fishingModal.classList.add('hidden');
-            clearInterval(fishingInterval);
-        }
-
-        function startFishingGame() {
-            fishingPosition = 0;
-            fishingDirection = 1;
-            elements.fishingStatus.textContent = "Concentre-se...";
-            elements.fishingStatus.style.color = "#aaa";
-            elements.actionFishBtn.disabled = false;
-            
-            let targetWidth = 30 + Math.random() * 50; 
-            let targetLeft = Math.random() * (100 - (targetWidth/3)); 
-            
-            elements.fishingTarget.style.width = targetWidth + "px";
-            elements.fishingTarget.style.left = targetLeft + "%";
-
-            if (fishingInterval) clearInterval(fishingInterval);
-            
-            fishingInterval = setInterval(() => {
-                fishingPosition += fishingSpeed * fishingDirection;
-                if (fishingPosition >= 100 || fishingPosition <= 0) fishingDirection *= -1;
-                elements.fishingBar.style.left = fishingPosition + "%";
-            }, 20);
-        }
-
-        function catchFish() {
-            clearInterval(fishingInterval);
-            elements.actionFishBtn.disabled = true;
-            
-            let barRect = elements.fishingBar.getBoundingClientRect();
-            let targetRect = elements.fishingTarget.getBoundingClientRect();
-
-            let barCenter = barRect.left + (barRect.width / 2);
-            
-            if (barCenter >= targetRect.left && barCenter <= targetRect.right) {
-                elements.fishingStatus.textContent = "PESCOU! 🎣 +1 Sachê de Ouro!";
-                elements.fishingStatus.style.color = "var(--green)";
-                gameState.goldenSachets++;
-                checkAchievements();
-            } else {
-                elements.fishingStatus.textContent = "Escapou... Tente de novo!";
-                elements.fishingStatus.style.color = "var(--red)";
-            }
-            
-            setTimeout(() => {
-                if(!elements.fishingModal.classList.contains('hidden')) startFishingGame();
-            }, 1500);
-        }
-
-        // --- EVENTOS ALEATÓRIOS (PEIXE, GATO DA SORTE, CHUVA DE CATNIP) ---
-
-        function trySpawnGoldenFish() {
-            if (Math.random() < 0.01 && !document.querySelector('.golden-fish')) {
-                spawnFish();
-            }
-        }
-
-        function spawnFish() {
-            const fish = document.createElement('div');
-            fish.className = 'golden-fish';
-            fish.textContent = '🐠';
-            fish.style.top = (Math.random() * 80 + 10) + '%';
-            
-            fish.onclick = () => {
-                activateBonus();
-                fish.remove();
-            };
-            
-            document.body.appendChild(fish);
-            setTimeout(() => { if(fish.parentNode) fish.remove(); }, 15000);
-        }
-
-        function activateBonus() {
-            gameState.bonusMultiplier = 7;
-            elements.frenzyOverlay.classList.add('active');
-            showMessage("FRENESI DE OURO! 7x Ganhos! 🐠");
-            
-            if (fishBonusTimeout) clearTimeout(fishBonusTimeout);
-            
-            fishBonusTimeout = setTimeout(() => {
-                gameState.bonusMultiplier = 1;
-                elements.frenzyOverlay.classList.remove('active');
-                showMessage("Frenesi acabou.");
-            }, 60000); 
-        }
-
-        function trySpawnLuckyCat() {
-            // Chance pequena de dar um bônus fixo
-            if(Math.random() < 0.005) { // 0.5% por segundo
-                let bonus = gameState.cps * 300; // 5 minutos de produção
-                if(bonus < 100) bonus = 100;
-                addScore(bonus);
-                showMessage(`🍀 Gato da Sorte passou! +${formatNumber(bonus)} Ronrons!`);
-            }
-        }
-
-        function trySpawnCatnipRain() {
-            // Chance pequena de dobrar produção de catnip
-            if(!catnipRainActive && Math.random() < 0.002) { // 0.2% por segundo (muito raro)
-                catnipRainActive = true;
-                showMessage("🌿 CHUVA DE CATNIP! Produção de Catnip dobrada por 30s!");
-                
-                // Efeito Visual
-                document.querySelector('.bakery-section').style.filter = "sepia(1) hue-rotate(50deg) saturate(3)";
-                
-                recalculateCPS();
-                
-                setTimeout(() => {
-                    catnipRainActive = false;
-                    document.querySelector('.bakery-section').style.filter = "none";
-                    showMessage("Chuva de Catnip acabou.");
-                    recalculateCPS();
-                }, 30000);
-            }
-        }
-
-        // --- LOJA E ABAS ---
-
-        function switchTab(tab) {
-            gameState.activeTab = tab;
-            updateTabVisuals();
-            renderStore();
-        }
-
-        function updateTabVisuals() {
-            [elements.tabBuildings, elements.tabUpgrades, elements.tabBoosts, elements.tabSpecials].forEach(el => el.classList.remove('active'));
-            
-            if(gameState.activeTab === 'buildings') elements.tabBuildings.classList.add('active');
-            if(gameState.activeTab === 'upgrades') elements.tabUpgrades.classList.add('active');
-            if(gameState.activeTab === 'boosts') elements.tabBoosts.classList.add('active');
-            if(gameState.activeTab === 'specials') elements.tabSpecials.classList.add('active');
-        }
-
-        function updateStoreButtons() {
-             let list = getActiveList();
-             
-             list.forEach(item => {
-                 let btn = document.getElementById(`btn-item-${item.id}`);
-                 if(!btn) return;
-                 
-                 if (gameState.activeTab === 'specials') {
-                     if (gameState.goldenSachets >= item.costSachets) btn.classList.remove('disabled');
-                     else btn.classList.add('disabled');
-                     return;
-                 }
-
-                 if (gameState.activeTab === 'boosts') {
-                     if (item.count > 0) return; // Já comprado
-                     if (gameState.score >= item.baseCost) btn.classList.remove('disabled');
-                     else btn.classList.add('disabled');
-                     return;
-                 }
-
-                 // Lógica Normal (Compra/Venda em Massa)
-                 if (gameState.sellMode) {
-                      const { refundAmount, count } = getBulkRefund(item, gameState.buyMultiplier);
-                      if (count > 0) btn.classList.remove('disabled');
-                      else btn.classList.add('disabled');
-                 } else {
-                      const { totalCost } = getBulkCost(item, gameState.buyMultiplier);
-                      if (gameState.score >= totalCost) btn.classList.remove('disabled');
-                      else btn.classList.add('disabled');
-                 }
-             });
-        }
-        
-        function getActiveList() {
-            if(gameState.activeTab === 'buildings') return gameState.buildings;
-            if(gameState.activeTab === 'upgrades') return gameState.clickItems;
-            if(gameState.activeTab === 'boosts') return gameState.boosts;
-            if(gameState.activeTab === 'specials') return gameState.specials;
-            return [];
-        }
+        // --- Renderização da Loja ---
 
         function renderStore() {
             elements.storeContainer.innerHTML = "";
-            let list = getActiveList();
+            
+            let listToRender;
+            if (gameState.activeTab === 'buildings') listToRender = gameState.buildings;
+            else if (gameState.activeTab === 'upgrades') listToRender = gameState.clickItems;
+            else listToRender = gameState.boosts;
+            
+            listToRender.forEach(item => {
+                const isBoost = item.targetId !== undefined; 
+                const isOwned = isBoost && item.count > 0;
 
-            list.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'upgrade-item disabled';
                 
-                // Estilo para modo venda
-                if (gameState.sellMode && gameState.activeTab !== 'specials' && gameState.activeTab !== 'boosts') {
+                // Aplica classe de venda se estiver no modo venda e não for boost
+                if (gameState.sellMode && !isBoost) {
                     div.classList.add('sell-mode');
                 }
                 
-                // Estilo para Boosts comprados
-                if (gameState.activeTab === 'boosts' && item.count > 0) {
+                if (isOwned) {
                     div.classList.add('purchased');
-                    div.classList.remove('disabled');
-                    div.style.background = "#2a3c2a";
-                    div.style.borderColor = "var(--green)";
+                    div.classList.remove('disabled'); 
                 }
 
                 div.id = `btn-item-${item.id}`;
-                div.onclick = () => handleStoreItemClick(item);
+                // Clique: Se for boost e já tiver, não faz nada. Senão, chama handler
+                if (!isOwned || (gameState.sellMode && !isBoost)) {
+                    div.onclick = () => handleStoreItemClick(item.id);
+                }
+                
+                let benefitText = "";
+                let costText = "";
+                let countText = item.count;
 
-                let costDisplay = "";
-                let countDisplay = item.count;
-
-                // --- RENDERIZAÇÃO ---
-                if (gameState.activeTab === 'specials') {
-                    costDisplay = `<span class="upgrade-cost sachet">🎒 ${item.costSachets}</span>`;
-                } else if (gameState.activeTab === 'boosts') {
-                    costDisplay = item.count > 0 ? "COMPRADO" : `🧶 ${formatNumber(item.baseCost)}`;
-                    countDisplay = item.count > 0 ? "✔" : "";
-                } else {
-                    // Buildings ou Upgrades (Suporta Compra/Venda em Massa)
-                    if (gameState.sellMode) {
-                         const { refundAmount, count } = getBulkRefund(item, gameState.buyMultiplier);
-                         costDisplay = `<span class="upgrade-cost refund">+${formatNumber(refundAmount)}</span>`;
-                         if (count > 0) costDisplay += ` (Vender ${count})`;
-                         else costDisplay = "Vazio";
+                // --- Renderização no MODO VENDA ---
+                if (gameState.sellMode && !isBoost) {
+                    const { refundAmount, count } = getBulkRefund(item, gameState.buyMultiplier);
+                    costText = `<span class="upgrade-cost refund">+${formatNumber(refundAmount)}</span>`;
+                    
+                    if (count > 0) {
+                         costText += ` (Vender ${count})`;
                     } else {
-                         const { totalCost, count } = getBulkCost(item, gameState.buyMultiplier);
-                         costDisplay = `🧶 ${formatNumber(totalCost)}`;
-                         if (gameState.buyMultiplier === 'MAX') {
-                             costDisplay += count > 0 ? ` (+${count})` : ` (+1)`;
-                         } else if (gameState.buyMultiplier > 1) {
-                             costDisplay += ` (x${gameState.buyMultiplier})`;
-                         }
+                         costText = `<span style="color:#777">Vazio</span>`;
+                    }
+                    
+                } 
+                // --- Renderização no MODO COMPRA ---
+                else {
+                    if (isBoost) {
+                        costText = isOwned ? "COMPRADO" : `<span class="upgrade-cost rare">🔮 ${formatNumber(item.baseCost)}</span>`;
+                        countText = isOwned ? "✔" : "";
+                    } else {
+                        const { totalCost, count } = getBulkCost(item, gameState.buyMultiplier);
+                        costText = `🧶 ${formatNumber(totalCost)}`;
+                        
+                        if (gameState.buyMultiplier === 'MAX') {
+                            if (count > 0) {
+                                costText += ` (+${count})`;
+                            } else {
+                                costText += ` (1)`; 
+                            }
+                        } else if (gameState.buyMultiplier > 1) {
+                            costText += ` (x${gameState.buyMultiplier})`;
+                        }
                     }
                 }
 
+                if (gameState.activeTab === 'buildings') {
+                    benefitText = `+${formatNumber(item.cps)} CPS`;
+                } else if (gameState.activeTab === 'upgrades') {
+                    benefitText = `+${formatNumber(item.clickIncrease)} / carinho`;
+                } else {
+                    benefitText = item.desc;
+                }
+                
                 div.innerHTML = `
-                    <div style="font-size: 2rem; margin-right: 15px;">${item.icon}</div>
-                    <div style="flex: 1;">
+                    <div class="upgrade-icon" style="font-size: 2rem; margin-right: 15px;">${item.icon}</div>
+                    <div class="upgrade-info" style="flex: 1;">
                         <h3>${item.name}</h3>
-                        <p>${costDisplay}</p>
-                        <p style="font-size: 0.8rem; color:#aaa;">${item.desc || ('+' + item.cps + ' CPS')}</p>
+                        <p class="upgrade-cost">${costText}</p>
+                        <p style="font-size: 0.8rem; margin-top: 2px;">${benefitText}</p>
                     </div>
-                    <div style="font-size: 1.5rem; font-weight: bold; color: rgba(255,255,255,0.2);">${countDisplay}</div>
+                    <div class="upgrade-count" id="count-item-${item.id}">${countText}</div>
                 `;
+                
                 elements.storeContainer.appendChild(div);
             });
         }
 
-        function handleStoreItemClick(item) {
-            if (gameState.activeTab === 'specials') {
-                buySpecial(item);
-                return;
-            }
-            if (gameState.activeTab === 'boosts') {
-                buyBoost(item);
-                return;
-            }
-
-            if (gameState.sellMode) {
-                sellItem(item);
-            } else {
-                buyItem(item);
-            }
-        }
-
-        function buySpecial(item) {
-            if (gameState.goldenSachets >= item.costSachets) {
-                gameState.goldenSachets -= item.costSachets;
-                item.count++;
-                renderStore();
-                showMessage("Item Especial Comprado!");
-            }
-        }
-
-        function buyBoost(item) {
-            if (item.count > 0) return;
-            if (gameState.score >= item.baseCost) {
-                gameState.score -= item.baseCost;
-                item.count++;
-                recalculateCPS();
-                recalculateClickValue();
-                renderStore();
-                showMessage("Acessório desbloqueado!");
-            }
-        }
-
-        function buyItem(item) {
-            const { totalCost, count } = getBulkCost(item, gameState.buyMultiplier);
+        // Função unificada de clique na loja
+        function handleStoreItemClick(id) {
+            let item, type;
+            item = gameState.buildings.find(b => b.id === id);
+            type = 'building';
             
-            if (gameState.buyMultiplier === 'MAX' && count === 0) return; // Não dá pra comprar nenhum
+            if (!item) {
+                item = gameState.clickItems.find(b => b.id === id);
+                type = 'upgrade';
+            }
+            if (!item) {
+                item = gameState.boosts.find(b => b.id === id);
+                type = 'boost';
+            }
+            if (!item) return;
+
+            // Se estiver no modo Venda e não for Boost, vende
+            if (gameState.sellMode && type !== 'boost') {
+                sellItem(item, type);
+            } else {
+                buyItem(item, type);
+            }
+        }
+
+        function sellItem(item, type) {
+            if (item.count <= 0) return;
+
+            const { refundAmount, count } = getBulkRefund(item, gameState.buyMultiplier);
+            
+            if (count > 0) {
+                item.count -= count;
+                gameState.score += refundAmount; // Devolve dinheiro
+                
+                if (type === 'building') recalculateCPS();
+                else recalculateClickValue();
+                
+                renderStore();
+                showMessage(`Vendido ${count}x ${item.name}!`);
+            }
+        }
+
+        function buyItem(item, type) {
+            if (type === 'boost') {
+                if (item.count > 0) return;
+                const cost = item.baseCost;
+                if (gameState.score >= cost) {
+                    gameState.score -= cost;
+                    item.count++;
+                    
+                    // Verifica se o boost afeta Click (Mimo) ou CPS (Building)
+                    if (item.targetType === 'click') {
+                        recalculateClickValue();
+                    } else {
+                        recalculateCPS();
+                    }
+                    
+                    renderStore();
+                    showMessage(`Acessório comprado!`);
+                }
+                return;
+            }
+
+            const { totalCost, count } = getBulkCost(item, gameState.buyMultiplier);
+
+            if (gameState.buyMultiplier === 'MAX' && count === 0) return;
 
             if (gameState.score >= totalCost) {
                 gameState.score -= totalCost;
                 item.count += count;
                 
-                if(gameState.activeTab === 'buildings') recalculateCPS();
-                if(gameState.activeTab === 'upgrades') recalculateClickValue();
-
-                renderStore();
-                showMessage(`Comprado ${count}x ${item.name}!`);
-            }
-        }
-
-        function sellItem(item) {
-            const { refundAmount, count } = getBulkRefund(item, gameState.buyMultiplier);
-            
-            if (count > 0) {
-                item.count -= count;
-                gameState.score += refundAmount;
+                if (type === 'building') {
+                    recalculateCPS();
+                } else {
+                    recalculateClickValue();
+                }
                 
-                if(gameState.activeTab === 'buildings') recalculateCPS();
-                if(gameState.activeTab === 'upgrades') recalculateClickValue();
-
-                renderStore();
-                showMessage(`Vendido ${count}x ${item.name}!`);
+                renderStore(); 
+                
+                const msgs = ["Boa escolha!", "Miau!", "Ronronando...", "Delícia!", "Poder Felino!"];
+                showMessage(`${count}x ${item.name} comprado! ${msgs[Math.floor(Math.random()*msgs.length)]}`);
             }
         }
 
         function recalculateCPS() {
             let cps = 0;
             gameState.buildings.forEach(b => {
-                let multi = 1;
-                // Bônus de Chuva de Catnip (ID 3 = Catnip)
-                if (b.id === 3 && catnipRainActive) multi *= 2;
+                let buildingCPS = b.cps;
                 
-                // Check boosts
-                gameState.boosts.forEach(bst => {
-                    if ((bst.targetType === 'building' || !bst.targetType) && bst.targetId === b.id && bst.count > 0) multi *= bst.multiplier;
+                gameState.boosts.forEach(boost => {
+                    // Só aplica se for targetType 'building' (ou undefined, compatibilidade antiga) e ID bater
+                    if ((boost.targetType === 'building' || !boost.targetType) && boost.targetId === b.id && boost.count > 0) {
+                        buildingCPS *= boost.multiplier;
+                    }
                 });
-                cps += b.count * b.cps * multi;
+
+                cps += b.count * buildingCPS;
             });
             gameState.cps = cps;
         }
 
         function recalculateClickValue() {
-            let val = 1;
-            gameState.clickItems.forEach(i => {
-                let multi = 1;
-                gameState.boosts.forEach(bst => {
-                    if (bst.targetType === 'click' && bst.targetId === i.id && bst.count > 0) multi *= bst.multiplier;
+            let clickVal = 1; 
+            gameState.clickItems.forEach(item => {
+                let itemValue = item.clickIncrease;
+                
+                // Verifica Boosts de Clique
+                gameState.boosts.forEach(boost => {
+                    if (boost.targetType === 'click' && boost.targetId === item.id && boost.count > 0) {
+                        itemValue *= boost.multiplier;
+                    }
                 });
-                val += i.count * i.clickIncrease * multi;
+
+                clickVal += item.count * itemValue;
             });
-            gameState.clickValue = val;
+            gameState.clickValue = clickVal;
         }
 
-        // --- UTILS ---
-        
-        function formatNumber(num) {
-            num = Number(num);
-            if (num >= 1e18) return (num / 1e18).toFixed(2) + 'Q';
-            if (num >= 1e15) return (num / 1e15).toFixed(2) + 'q';
-            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
-            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
-            return Number.isInteger(num) ? num : num.toFixed(1);
-        }
+        // --- Efeitos ---
 
         function createParticles(x, y, text) {
-            const p = document.createElement('div');
-            p.className = 'floating-number';
-            p.textContent = text;
-            p.style.left = (x + (Math.random()*20-10)) + 'px';
-            p.style.top = (y - 20) + 'px';
-            document.body.appendChild(p);
-            setTimeout(() => p.remove(), 1000);
+            const particle = document.createElement('div');
+            particle.className = 'floating-number';
+            particle.textContent = text;
+            
+            const randomX = (Math.random() - 0.5) * 50;
+            particle.style.left = `${x + randomX}px`;
+            particle.style.top = `${y - 30}px`;
+            
+            document.body.appendChild(particle);
+            
+            setTimeout(() => { particle.remove(); }, 1000);
         }
 
         function showMessage(msg) {
-            if(elements.msgLog) {
-                elements.msgLog.textContent = msg;
-                elements.msgLog.style.opacity = 1;
-                setTimeout(() => elements.msgLog.style.opacity = 0, 2000);
-            }
+            elements.msgLog.textContent = msg;
+            elements.msgLog.style.opacity = 1;
+            
+            if (elements.msgLog.timeout) clearTimeout(elements.msgLog.timeout);
+            
+            elements.msgLog.timeout = setTimeout(() => {
+                elements.msgLog.style.opacity = 0;
+            }, 3000);
         }
 
-        function checkAchievements() {
-            gameState.achievements.forEach(ach => {
-                if (!ach.unlocked && ach.check(gameState)) {
-                    ach.unlocked = true;
-                    showAchievementToast(ach);
-                }
-            });
-        }
-        
-        function showAchievementToast(ach) {
-            document.getElementById('toast-text').textContent = ach.name;
-            document.getElementById('achievement-toast').classList.add('show');
-            setTimeout(() => document.getElementById('achievement-toast').classList.remove('show'), 3000);
-        }
-        
-        function showAchievementsModal() {
-             elements.achievementsContent.innerHTML = "";
-             gameState.achievements.forEach(ach => {
-                 const div = document.createElement('div');
-                 div.className = `achievement-item ${ach.unlocked ? 'unlocked' : 'locked'}`;
-                 div.style.padding = "10px";
-                 div.style.marginBottom = "5px";
-                 div.style.background = ach.unlocked ? "rgba(255,204,0,0.1)" : "rgba(255,255,255,0.05)";
-                 div.innerHTML = `<span style="font-size:1.5rem; margin-right:10px;">${ach.unlocked ? ach.icon : '🔒'}</span> <b>${ach.name}</b><br><small>${ach.desc}</small>`;
-                 elements.achievementsContent.appendChild(div);
-             });
-             elements.achievementsModal.classList.remove('hidden');
-        }
-        
-        function showStatsModal() {
-            // Simplificado para espaço
-            let statsHTML = `
-                <div class="stat-row"><span class="stat-label">Karma:</span> <span class="stat-value">${formatNumber(gameState.karma)}</span></div>
-                <div class="stat-row"><span class="stat-label">Ascensões:</span> <span class="stat-value">${gameState.prestigeCount}</span></div>
-                <div class="stat-row"><span class="stat-label">Cliques:</span> <span class="stat-value">${formatNumber(gameState.totalClicks)}</span></div>
-            `;
-            elements.statsContent.innerHTML = statsHTML;
-            elements.statsModal.classList.remove('hidden');
+        function formatNumber(num) {
+            num = Number(num);
+            if (num >= 1e18) return (num / 1e18).toFixed(2) + 'Q'; // Quintilhão
+            if (num >= 1e15) return (num / 1e15).toFixed(2) + 'q'; // Quadrilhão
+            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T'; // Trilhão
+            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';   // Bilhão
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';   // Milhão
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k'; // Mil
+            return Number.isInteger(num) ? num : num.toFixed(1);
         }
 
-        // --- SAVE/LOAD ---
-        
+        // --- Save/Load System ---
+
         function saveGame() {
-            gameState.lastSaveTime = Date.now();
-            localStorage.setItem('catClickerSave', JSON.stringify(gameState));
-        }
-        
-        function resetGameStateToDefaults() {
-            // Helper para resetar objetos mantendo a referência se necessário, 
-            // mas aqui no reload é mais simples re-iniciar as variáveis globais manualmente se não fizermos reload da pagina.
-            // Para simplicidade deste arquivo unico, o reload da pagina é a melhor opção para limpar intervalos antigos.
-            location.reload(); 
-        }
-
-        function performHardReset() {
-            localStorage.removeItem('catClickerSave');
-            location.reload();
+            // Salva o timestamp atual
+            const saveState = { 
+                ...gameState, 
+                clickHistory: [],
+                lastSaveTime: Date.now() // Importante para o cálculo offline
+            };
+            localStorage.setItem('catClickerSave', JSON.stringify(saveState));
         }
 
         function loadGame() {
@@ -1336,95 +1291,78 @@
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
-                    // Merge básico para garantir que novos campos (karma, specials) existam
-                    Object.assign(gameState, parsed);
+                    gameState.score = parsed.score || 0;
+                    gameState.totalScoreAccumulated = parsed.totalScoreAccumulated || 0;
+                    // Carrega estatísticas novas com fallback
+                    gameState.startTime = parsed.startTime || Date.now();
+                    gameState.totalClicks = parsed.totalClicks || 0;
                     
-                    // Re-hidratar arrays complexos se necessário (garantir que objetos novos existam no save antigo)
-                    
-                    // RE-APLICAR CONTAGEM DE BOOSTS SE EXISTIR
-                    if (parsed.boosts && Array.isArray(parsed.boosts)) {
-                        parsed.boosts.forEach(savedB => {
-                            const realB = gameState.boosts.find(b => b.id === savedB.id);
-                            if (realB) realB.count = savedB.count;
+                    if (parsed.buildings) {
+                        parsed.buildings.forEach((savedB, index) => {
+                            if (gameState.buildings[index]) gameState.buildings[index].count = savedB.count;
                         });
                     }
-                    if (parsed.clickItems && Array.isArray(parsed.clickItems)) {
-                        parsed.clickItems.forEach(savedB => {
-                            const realB = gameState.clickItems.find(b => b.id === savedB.id);
-                            if (realB) realB.count = savedB.count;
+                    if (parsed.clickItems) {
+                        parsed.clickItems.forEach((savedI, index) => {
+                            const localItem = gameState.clickItems.find(i => i.id === savedI.id);
+                            if (localItem) localItem.count = savedI.count;
                         });
                     }
-                     if (parsed.buildings && Array.isArray(parsed.buildings)) {
-                        parsed.buildings.forEach(savedB => {
-                            const realB = gameState.buildings.find(b => b.id === savedB.id);
-                            if (realB) realB.count = savedB.count;
-                        });
+                    if (parsed.boosts) {
+                         parsed.boosts.forEach((savedBoost) => {
+                            const localBoost = gameState.boosts.find(b => b.id === savedBoost.id);
+                            if (localBoost) localBoost.count = savedBoost.count;
+                         });
                     }
-                    if (parsed.achievements && Array.isArray(parsed.achievements)) {
-                         parsed.achievements.forEach(savedA => {
-                            const realA = gameState.achievements.find(a => a.id === savedA.id);
-                            if (realA) realA.unlocked = savedA.unlocked;
-                        });
-                    }
-                    
+
+                    // Recalcula o CPS baseado no que foi carregado
                     recalculateCPS();
                     recalculateClickValue();
                     
-                    // Visual
-                    if(gameState.karma > 50) elements.bigCat.textContent = "😼";
-
-                    // Checa Ganhos Offline
-                    checkOfflineEarnings();
-                } catch(e) { console.error(e); }
-            }
-        }
-
-        function checkOfflineEarnings() {
-            const now = Date.now();
-            if (gameState.lastSaveTime) {
-                const secondsPassed = (now - gameState.lastSaveTime) / 1000;
-                
-                if (secondsPassed > 60 && gameState.cps > 0) { // Minimo 1 minuto
-                    // Calcula baseando no Karma, mas sem bônus temporários
-                    const baseMulti = 1 + (gameState.karma * 0.1);
-                    const earnings = Math.floor(gameState.cps * baseMulti * secondsPassed);
-                    
-                    if (earnings > 0) {
-                        addScore(earnings);
-                        elements.offlineTimeDisplay.textContent = formatSeconds(secondsPassed);
-                        elements.offlineEarningsDisplay.textContent = formatNumber(earnings);
-                        elements.offlineModal.classList.remove('hidden');
+                    // --- CÁLCULO DE GANHOS OFFLINE ---
+                    if (parsed.lastSaveTime) {
+                        const now = Date.now();
+                        const timeDiff = now - parsed.lastSaveTime;
+                        
+                        // Reduzi para 5000ms (5 segundos) para facilitar o teste
+                        if (timeDiff > 5000 && gameState.cps > 0) {
+                            const secondsAway = Math.floor(timeDiff / 1000);
+                            const earnings = Math.floor(secondsAway * gameState.cps);
+                            
+                            if (earnings > 0) {
+                                addScore(earnings);
+                                showOfflineEarnings(secondsAway, earnings);
+                            }
+                        }
                     }
+                    
+                } catch (e) {
+                    console.error("Save corrompido ou versão antiga.", e);
                 }
             }
         }
 
-        function formatSeconds(seconds) {
-            if (seconds < 60) return Math.floor(seconds) + "s";
-            if (seconds < 3600) return Math.floor(seconds/60) + "m";
-            return Math.floor(seconds/3600) + "h";
+        function showOfflineEarnings(seconds, earnings) {
+            // Formata o tempo bonito (ex: 2h 30m)
+            let timeString = "";
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            
+            if (hours > 0) timeString += `${hours}h `;
+            if (minutes > 0) timeString += `${minutes}m `;
+            timeString += `${secs}s`;
+
+            elements.offlineTimeDisplay.textContent = timeString;
+            elements.offlineEarningsDisplay.textContent = `+${formatNumber(earnings)}`;
+            
+            // Mostra o modal
+            elements.offlineModal.classList.remove('hidden');
         }
 
-        function setSellMode(mode) { 
-            gameState.sellMode = mode; 
-            elements.btnModeBuy.classList.toggle('active', !mode);
-            elements.btnModeSell.classList.toggle('sell-active', mode);
-            renderStore();
-        }
-        function setBuyMultiplier(val) { 
-            gameState.buyMultiplier = val; 
-            elements.multiplierBtns.forEach(b => {
-                // Check if button text matches val or if val is 'MAX'
-                if (
-                    (val === 'MAX' && b.textContent === 'Máx') ||
-                    (parseInt(b.textContent) === val)
-                ) {
-                    b.classList.add('active');
-                } else {
-                    b.classList.remove('active');
-                }
-            });
-            renderStore();
+        function performReset() {
+            localStorage.removeItem('catClickerSave');
+            location.reload();
         }
 
         init();
