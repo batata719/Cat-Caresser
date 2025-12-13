@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mestre dos Gatos: Ascensão</title>
+    <title>Mestre dos Gatos: Ascensão v3.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-dark: #121013;
-            --bg-panel: rgba(40, 35, 40, 0.7);
+            --bg-panel: rgba(40, 35, 40, 0.85);
             --accent: #ffcc00;
             --accent-glow: rgba(255, 204, 0, 0.5);
             --text-main: #ffffff;
@@ -16,18 +16,19 @@
             --green: #4cd964;
             --red: #ff453a;
             --purple: #bf5af2;
-            --prestige: #00d2ff; /* Azul Ciano para Prestígio */
+            --prestige: #00d2ff;
+            --combo: #ff9500;
             --glass-border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; outline: none; }
 
         body {
             font-family: 'Nunito', sans-serif;
             background-color: var(--bg-dark);
             background-image: 
-                radial-gradient(circle at 10% 20%, rgba(191, 90, 242, 0.1) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(255, 204, 0, 0.1) 0%, transparent 20%);
+                radial-gradient(circle at 10% 20%, rgba(191, 90, 242, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(255, 204, 0, 0.15) 0%, transparent 25%);
             color: var(--text-main);
             height: 100vh;
             overflow: hidden;
@@ -38,133 +39,97 @@
         /* --- ANIMAÇÕES --- */
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        @keyframes shine { 0% { background-position: -100px; } 100% { background-position: 300px; } }
         @keyframes goldenSpawn { 0% { transform: scale(0) rotate(180deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
-        @keyframes fadeOutUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
+        @keyframes fadeOutUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-60px); } }
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
 
         /* --- NEWS TICKER --- */
         .news-ticker {
-            background: rgba(0,0,0,0.8);
-            width: 100%;
-            height: 30px;
-            overflow: hidden;
-            position: relative;
-            z-index: 100;
-            border-bottom: 1px solid #333;
-            display: flex;
-            align-items: center;
+            background: rgba(0,0,0,0.9);
+            width: 100%; height: 28px;
+            overflow: hidden; position: relative; z-index: 100;
+            border-bottom: 1px solid #333; display: flex; align-items: center;
         }
         .ticker-content {
-            white-space: nowrap;
-            position: absolute;
-            animation: tickerMove 20s linear infinite;
-            font-size: 0.9rem;
-            color: #ddd;
-            font-style: italic;
+            white-space: nowrap; position: absolute;
+            animation: tickerMove 25s linear infinite;
+            font-size: 0.85rem; color: #ddd; font-style: italic;
         }
         @keyframes tickerMove { 0% { left: 100%; } 100% { left: -100%; } }
 
         /* --- UI GERAL --- */
-        .game-layout {
-            display: flex;
-            flex: 1;
-            height: calc(100% - 30px);
-            position: relative;
-        }
+        .game-layout { display: flex; flex: 1; height: calc(100% - 28px); position: relative; }
 
         /* ESQUERDA: O GATO */
         .left-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 10;
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            position: relative; z-index: 10;
         }
 
-        .score-container {
-            text-align: center;
-            margin-bottom: 2rem;
-            position: relative;
-        }
+        .score-container { text-align: center; margin-bottom: 1rem; position: relative; width: 100%; }
 
         .main-score {
-            font-family: 'Fredoka One', cursive;
-            font-size: 4rem;
-            color: var(--accent);
-            text-shadow: 0 0 20px var(--accent-glow);
+            font-family: 'Fredoka One', cursive; font-size: 3.5rem;
+            color: var(--accent); text-shadow: 0 0 20px var(--accent-glow);
             line-height: 1;
         }
 
-        .cps-label { font-size: 1.1rem; color: var(--text-dim); margin-top: 5px; font-weight: 700; }
+        .cps-label { font-size: 1rem; color: var(--text-dim); margin-top: 5px; font-weight: 700; }
+        .cps-detail { font-size: 0.8rem; color: #666; font-weight: normal; }
         
-        /* Novelo de Ouro (Prestígio) */
         .prestige-currency {
-            color: var(--prestige);
-            font-size: 0.9rem;
-            font-weight: bold;
-            margin-top: 5px;
-            display: none; /* Só aparece se tiver */
-            text-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
+            color: var(--prestige); font-size: 0.9rem; font-weight: bold;
+            margin-top: 5px; display: none; text-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
+        }
+
+        /* BARRA DE COMBO */
+        .combo-container {
+            width: 300px; height: 10px; background: rgba(255,255,255,0.1);
+            border-radius: 10px; margin: 10px auto; overflow: hidden; position: relative;
+            display: none; /* Aparece ao clicar */
+        }
+        .combo-fill {
+            height: 100%; width: 0%; background: linear-gradient(90deg, #ff9500, #ffcc00);
+            transition: width 0.1s linear; box-shadow: 0 0 10px #ff9500;
+        }
+        .combo-text {
+            font-size: 0.9rem; color: var(--combo); font-weight: bold; margin-top: 2px;
+            height: 20px; opacity: 0; transition: opacity 0.2s;
         }
 
         .cat-area {
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            -webkit-tap-highlight-color: transparent;
+            position: relative; cursor: pointer;
+            transition: transform 0.05s; -webkit-tap-highlight-color: transparent;
+            margin: 20px 0;
         }
-
         .cat-emoji {
-            font-size: 14rem;
-            filter: drop-shadow(0 10px 30px rgba(0,0,0,0.5));
-            transition: all 0.1s;
+            font-size: 13rem; filter: drop-shadow(0 10px 30px rgba(0,0,0,0.5));
+            transition: all 0.2s; display: inline-block;
         }
-
-        .cat-area:active .cat-emoji { transform: scale(0.95) rotate(-3deg); }
-        .cat-area:hover .cat-emoji { filter: drop-shadow(0 0 40px var(--accent-glow)); }
+        .cat-area:active .cat-emoji { transform: scale(0.90) rotate(-3deg); }
+        .cat-area.shake .cat-emoji { animation: shake 0.5s; }
 
         /* DIREITA: LOJA */
         .right-panel {
-            width: 420px;
-            background: var(--bg-panel);
-            backdrop-filter: blur(10px);
-            border-left: var(--glass-border);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            box-shadow: -10px 0 50px rgba(0,0,0,0.5);
-            z-index: 20;
+            width: 400px; background: var(--bg-panel);
+            backdrop-filter: blur(15px); border-left: var(--glass-border);
+            display: flex; flex-direction: column; position: relative;
+            box-shadow: -10px 0 50px rgba(0,0,0,0.5); z-index: 20;
         }
 
-        .store-header {
-            padding: 15px;
-            background: rgba(0,0,0,0.3);
-            border-bottom: var(--glass-border);
-        }
-
+        .store-header { padding: 15px; background: rgba(0,0,0,0.3); border-bottom: var(--glass-border); }
         .tab-container { display: flex; gap: 5px; margin-bottom: 10px; }
         
         .tab-btn {
-            flex: 1;
-            padding: 10px;
-            background: rgba(255,255,255,0.05);
-            border: none;
-            color: var(--text-dim);
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: 'Nunito', sans-serif;
+            flex: 1; padding: 8px; background: rgba(255,255,255,0.05);
+            border: none; color: var(--text-dim); font-weight: bold;
+            border-radius: 6px; cursor: pointer; transition: 0.2s;
+            font-family: 'Nunito', sans-serif; font-size: 0.9rem;
         }
-        
-        .tab-btn.active {
-            background: var(--accent);
-            color: #121013;
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
+        .tab-btn:hover { background: rgba(255,255,255,0.1); }
+        .tab-btn.active { background: var(--accent); color: #121013; box-shadow: 0 0 15px var(--accent-glow); }
 
         .multiplier-controls { display: flex; justify-content: center; gap: 5px; font-size: 0.8rem; }
         .mult-btn {
@@ -173,161 +138,153 @@
         }
         .mult-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(255, 204, 0, 0.1); }
 
-        .store-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-        }
-        
-        /* Custom Scrollbar */
+        .store-list { flex: 1; overflow-y: auto; padding: 10px; }
         .store-list::-webkit-scrollbar { width: 6px; }
         .store-list::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
 
         .store-item {
-            background: rgba(255,255,255,0.03);
-            border: var(--glass-border);
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
+            background: rgba(255,255,255,0.03); border: var(--glass-border);
+            border-radius: 8px; padding: 10px; margin-bottom: 8px;
+            display: flex; align-items: center; cursor: pointer;
+            transition: all 0.2s; position: relative;
         }
-
         .store-item:hover { transform: translateX(-3px); background: rgba(255,255,255,0.07); }
         .store-item.disabled { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
         .store-item.purchased { background: rgba(76, 217, 100, 0.1); border-color: var(--green); }
 
-        .item-icon { font-size: 2rem; margin-right: 15px; width: 40px; text-align: center; }
+        .item-icon { font-size: 1.8rem; margin-right: 12px; min-width: 40px; text-align: center; }
         .item-details { flex: 1; }
-        .item-name { font-weight: 800; font-size: 1rem; color: #fff; }
-        .item-cost { color: var(--red); font-weight: bold; font-size: 0.9rem; }
+        .item-name { font-weight: 800; font-size: 0.95rem; color: #fff; }
+        .item-cost { color: var(--red); font-weight: bold; font-size: 0.85rem; }
         .item-bonus { font-size: 0.75rem; color: var(--text-dim); }
-        .item-count { font-size: 1.5rem; font-weight: 900; color: rgba(255,255,255,0.1); margin-left: 10px; }
+        .item-count { font-size: 1.4rem; font-weight: 900; color: rgba(255,255,255,0.1); margin-left: 10px; }
 
         /* Gato Dourado */
         .golden-cat {
-            position: absolute;
-            font-size: 5rem;
-            cursor: pointer;
-            z-index: 999;
-            filter: drop-shadow(0 0 20px gold);
+            position: absolute; font-size: 4rem; cursor: pointer;
+            z-index: 999; filter: drop-shadow(0 0 20px gold);
             animation: goldenSpawn 0.5s ease-out;
         }
 
-        /* Achievements Popups */
+        /* Achievements */
         .achievement-container {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
+            position: fixed; bottom: 20px; left: 20px; z-index: 2000;
+            display: flex; flex-direction: column; gap: 10px; pointer-events: none;
         }
-
         .achievement-toast {
-            background: rgba(30, 30, 30, 0.95);
-            border-left: 4px solid var(--accent);
-            padding: 15px;
-            border-radius: 4px;
-            color: #fff;
-            width: 300px;
+            background: rgba(30, 30, 30, 0.95); border-left: 4px solid var(--accent);
+            padding: 12px; border-radius: 4px; color: #fff; width: 280px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.5);
             animation: slideInRight 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            display: flex;
-            align-items: center;
+            display: flex; align-items: center;
         }
-        .ach-icon { font-size: 2rem; margin-right: 15px; }
 
-        /* Partículas de Clique */
+        /* Partículas */
         .particle {
-            position: absolute;
-            pointer-events: none;
-            font-weight: 900;
-            font-size: 1.5rem;
-            animation: fadeOutUp 1s forwards;
-            color: #fff;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            z-index: 100;
+            position: absolute; pointer-events: none; font-weight: 900;
+            font-size: 1.2rem; animation: fadeOutUp 0.8s forwards;
+            color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); z-index: 100;
         }
-        
-        .particle.crit { color: var(--accent); font-size: 2.2rem; text-shadow: 0 0 10px var(--accent); }
+        .particle.crit { color: var(--combo); font-size: 1.8rem; text-shadow: 0 0 10px var(--combo); }
 
         /* MODAIS */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(5px);
-            z-index: 3000;
-            display: flex; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+            z-index: 3000; display: flex; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none; transition: 0.3s;
         }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
         
         .modal {
-            background: #252025;
-            padding: 2rem;
-            border-radius: 15px;
-            width: 90%; max-width: 500px;
-            text-align: center;
-            border: 1px solid #444;
-            box-shadow: 0 0 50px rgba(0,0,0,0.7);
-            transform: scale(0.8); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: #252025; padding: 2rem; border-radius: 15px;
+            width: 90%; max-width: 450px; text-align: center;
+            border: 1px solid #444; box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            transform: scale(0.9); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 90vh; overflow-y: auto;
         }
         .modal-overlay.active .modal { transform: scale(1); }
 
-        .modal h2 { font-family: 'Fredoka One'; color: var(--accent); margin-bottom: 10px; font-size: 2rem; }
-        .modal p { color: #ccc; margin-bottom: 20px; line-height: 1.6; }
+        .modal h2 { font-family: 'Fredoka One'; color: var(--accent); margin-bottom: 15px; font-size: 1.8rem; }
+        .modal p { color: #ccc; margin-bottom: 20px; font-size: 0.95rem; line-height: 1.5; }
         
+        .modal-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;
+        }
+        .skin-btn {
+            background: rgba(255,255,255,0.05); border: 2px solid transparent;
+            border-radius: 8px; padding: 10px; cursor: pointer; transition: 0.2s;
+        }
+        .skin-btn:hover { background: rgba(255,255,255,0.1); }
+        .skin-btn.active { border-color: var(--accent); background: rgba(255,204,0,0.1); }
+        .skin-btn.locked { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+
         .btn {
-            padding: 12px 25px; border: none; border-radius: 50px; font-weight: bold; font-size: 1rem;
-            cursor: pointer; transition: 0.2s; font-family: 'Nunito';
-            background: #444; color: #fff;
+            padding: 10px 20px; border: none; border-radius: 50px;
+            font-weight: bold; font-size: 0.9rem; cursor: pointer;
+            transition: 0.2s; font-family: 'Nunito'; background: #444; color: #fff;
+            margin: 5px;
         }
         .btn:hover { transform: scale(1.05); filter: brightness(1.2); }
         .btn-primary { background: var(--accent); color: #121013; }
         .btn-danger { background: var(--red); color: white; }
-        .btn-prestige { background: var(--prestige); color: #003344; box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); }
+        .btn-prestige { background: var(--prestige); color: #003344; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
 
-        /* Botões de controle inferiores */
+        /* Controles Inferiores */
         .bottom-controls {
-            position: absolute; bottom: 20px;
-            display: flex; gap: 10px;
+            position: absolute; bottom: 20px; display: flex; gap: 15px;
+            padding: 10px 20px; background: rgba(0,0,0,0.4); border-radius: 30px;
+            backdrop-filter: blur(5px);
         }
         .ctrl-btn {
-            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-            color: #aaa; width: 40px; height: 40px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s;
+            background: transparent; border: none; color: #aaa; font-size: 1.5rem;
+            cursor: pointer; transition: 0.2s; position: relative;
         }
-        .ctrl-btn:hover { background: #fff; color: #000; }
+        .ctrl-btn:hover { color: #fff; transform: translateY(-3px); }
+        .ctrl-btn::after {
+            content: attr(title); position: absolute; bottom: 120%; left: 50%;
+            transform: translateX(-50%); background: #000; color: #fff;
+            padding: 4px 8px; font-size: 0.7rem; border-radius: 4px;
+            opacity: 0; pointer-events: none; transition: 0.2s; white-space: nowrap;
+        }
+        .ctrl-btn:hover::after { opacity: 1; }
+
+        .stats-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.9rem; }
+        .stats-row:last-child { border: none; }
+        .stats-val { font-weight: bold; color: #fff; }
+
+        /* Input de texto para import */
+        .import-area { width: 100%; background: #111; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-family: monospace; resize: none; height: 80px; }
 
         @media (max-width: 800px) {
             .game-layout { flex-direction: column; overflow-y: auto; }
-            .right-panel { width: 100%; height: auto; border-left: none; border-top: 1px solid #333; }
-            .cat-emoji { font-size: 10rem; margin: 20px 0; }
-            .bottom-controls { position: relative; bottom: auto; margin-bottom: 20px; }
-            .main-score { font-size: 3rem; }
+            .right-panel { width: 100%; height: auto; border-left: none; border-top: 1px solid #333; padding-bottom: 80px; }
+            .cat-emoji { font-size: 9rem; margin: 10px 0; }
+            .bottom-controls { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 100; width: 90%; justify-content: space-around; }
+            .main-score { font-size: 2.8rem; }
         }
     </style>
 </head>
 <body>
 
+    <!-- NOTÍCIAS -->
     <div class="news-ticker">
-        <div class="ticker-content" id="ticker">Bem-vindo ao Mestre dos Gatos! Comece a fazer carinho!</div>
+        <div class="ticker-content" id="ticker">Bem-vindo ao Mestre dos Gatos! Comece a clicar!</div>
     </div>
 
     <div class="game-layout">
+        <!-- ESQUERDA -->
         <section class="left-panel">
             <div class="score-container">
                 <div class="main-score" id="score">0</div>
                 <div class="cps-label">Ronrons por segundo: <span id="cps">0.0</span></div>
-                <div class="prestige-currency" id="prestige-display">🧶 Novelos de Ouro: 0 (+0% bônus)</div>
+                <div class="prestige-currency" id="prestige-display">🧶 Novelos de Ouro: 0</div>
+                
+                <!-- Sistema de Combo -->
+                <div class="combo-container" id="combo-bar-container">
+                    <div class="combo-fill" id="combo-fill"></div>
+                </div>
+                <div class="combo-text" id="combo-text">COMBO x1.0</div>
             </div>
 
             <div class="cat-area" id="cat-clicker">
@@ -336,11 +293,13 @@
 
             <div class="bottom-controls">
                 <button class="ctrl-btn" id="btn-stats" title="Estatísticas">📊</button>
-                <button class="ctrl-btn" id="btn-settings" title="Opções">⚙️</button>
-                <button class="ctrl-btn" id="btn-prestige" title="Ascensão" style="color:var(--prestige); border-color:var(--prestige);">🌀</button>
+                <button class="ctrl-btn" id="btn-skins" title="Guarda-Roupa">👕</button>
+                <button class="ctrl-btn" id="btn-prestige" title="Ascensão" style="color:var(--prestige);">🌀</button>
+                <button class="ctrl-btn" id="btn-settings" title="Configurações">⚙️</button>
             </div>
         </section>
 
+        <!-- DIREITA -->
         <section class="right-panel">
             <div class="store-header">
                 <div class="tab-container">
@@ -356,63 +315,116 @@
                 </div>
             </div>
             <div class="store-list" id="store-list">
-                </div>
+                <!-- Itens gerados via JS -->
+            </div>
         </section>
     </div>
 
+    <!-- Container de Achievements -->
     <div class="achievement-container" id="achievement-container"></div>
 
+    <!-- MODAL SKINS -->
+    <div class="modal-overlay" id="modal-skins">
+        <div class="modal">
+            <h2>Guarda-Roupa Felino</h2>
+            <p>Desbloqueie novas aparências para seu gato.</p>
+            <div class="modal-grid" id="skins-grid">
+                <!-- Skins geradas via JS -->
+            </div>
+            <button class="btn" onclick="toggleModal('modal-skins')">Fechar</button>
+        </div>
+    </div>
+
+    <!-- MODAL STATS -->
+    <div class="modal-overlay" id="modal-stats">
+        <div class="modal">
+            <h2>Estatísticas 📊</h2>
+            <div id="stats-content">
+                <!-- Dados via JS -->
+            </div>
+            <br>
+            <button class="btn" onclick="toggleModal('modal-stats')">Fechar</button>
+        </div>
+    </div>
+
+    <!-- MODAL SETTINGS -->
+    <div class="modal-overlay" id="modal-settings">
+        <div class="modal">
+            <h2>Configurações ⚙️</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <button class="btn" id="btn-toggle-audio" onclick="toggleAudio()">🔊 Som: Ligado</button>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #444; margin: 15px 0;">
+            
+            <p>Salvar / Carregar</p>
+            <button class="btn btn-primary" onclick="exportSave()">Exportar Save (Copiar)</button>
+            <button class="btn" onclick="openImport()">Importar Save</button>
+
+            <div id="import-section" style="display:none; margin-top:10px;">
+                <textarea class="import-area" id="import-text" placeholder="Cole o código do save aqui..."></textarea>
+                <button class="btn btn-primary" onclick="importSave()">Carregar</button>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #444; margin: 15px 0;">
+
+            <button class="btn btn-danger" onclick="hardReset()">⚠️ APAGAR TUDO</button>
+            <br><br>
+            <button class="btn" onclick="toggleModal('modal-settings')">Fechar</button>
+        </div>
+    </div>
+
+    <!-- MODAL PRESTIGIO -->
     <div class="modal-overlay" id="modal-prestige">
         <div class="modal">
             <h2>Ascensão Cósmica 🌀</h2>
-            <p>Seus gatos alcançaram o nirvana. Ao resetar, você perde todos os gatos e estruturas, mas ganha <b>Novelos de Ouro</b>.</p>
-            <p>Cada Novelo aumenta seu CPS em <b>+10%</b> permanentemente.</p>
+            <p>Resetar reinicia seu dinheiro e estruturas, mas mantém conquistas, skins e acessórios.</p>
+            <p>Cada Novelo de Ouro aumenta o CPS em <b>+10%</b>.</p>
             <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:8px; margin-bottom:20px;">
                 <p style="margin:0; font-size:0.9rem; color:#aaa;">Recompensa ao resetar:</p>
                 <h3 style="color:var(--prestige); font-size:2.5rem; margin:5px 0;" id="prestige-reward-amount">+0</h3>
                 <p style="margin:0; font-size:0.8rem; color:#aaa;">Novelos de Ouro</p>
             </div>
-            <div style="display:flex; gap:10px; justify-content:center;">
-                <button class="btn btn-prestige" onclick="doPrestige()">Resetar e Ascender</button>
-                <button class="btn" onclick="toggleModal('modal-prestige')">Cancelar</button>
-            </div>
+            <button class="btn btn-prestige" onclick="doPrestige()">Resetar e Ascender</button>
+            <button class="btn" onclick="toggleModal('modal-prestige')">Cancelar</button>
         </div>
     </div>
 
+    <!-- MODAL OFFLINE/DAILY -->
     <div class="modal-overlay" id="modal-offline">
         <div class="modal">
-            <h2>Bem-vindo de volta! 🌙</h2>
-            <p>Enquanto você dormia, seus gatos trabalharam.</p>
+            <h2 id="modal-offline-title">Bem-vindo de volta!</h2>
+            <p id="modal-offline-msg">Seus gatos trabalharam.</p>
             <h3 style="color:var(--accent); font-size:2.5rem;" id="offline-gains">+0</h3>
-            <p>Ronrons coletados</p>
             <button class="btn btn-primary" onclick="toggleModal('modal-offline')">Coletar</button>
         </div>
     </div>
 
     <script>
-        // --- SISTEMA DE ÁUDIO (SINTETIZADOR) ---
+        // --- SISTEMA DE ÁUDIO ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let audioEnabled = true;
         
         function playSound(type) {
+            if (!audioEnabled) return;
             if (audioCtx.state === 'suspended') audioCtx.resume();
+            
             const osc = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
             osc.connect(gainNode);
             gainNode.connect(audioCtx.destination);
-
             const now = audioCtx.currentTime;
 
             if (type === 'click') {
-                // "Pop" suave
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(800, now);
                 osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
-                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.setValueAtTime(0.1, now);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
                 osc.start(now);
                 osc.stop(now + 0.1);
             } else if (type === 'buy') {
-                // "Cha-ching" agudo
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(1200, now);
                 osc.frequency.linearRampToValueAtTime(1800, now + 0.1);
@@ -421,24 +433,34 @@
                 osc.start(now);
                 osc.stop(now + 0.2);
             } else if (type === 'golden') {
-                // Som mágico
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(500, now);
-                osc.frequency.linearRampToValueAtTime(2000, now + 0.5);
-                gainNode.gain.setValueAtTime(0.2, now);
+                osc.frequency.linearRampToValueAtTime(1500, now + 0.5);
+                gainNode.gain.setValueAtTime(0.1, now);
                 gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
                 osc.start(now);
                 osc.stop(now + 0.5);
             }
         }
 
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const btn = document.getElementById('btn-toggle-audio');
+            btn.innerText = audioEnabled ? "🔊 Som: Ligado" : "🔇 Som: Desligado";
+            btn.style.opacity = audioEnabled ? "1" : "0.5";
+        }
+
         // --- DADOS DO JOGO ---
-        let game = {
+        const defaultGame = {
             score: 0,
-            totalScore: 0, // Lifetime accumulated
+            totalScore: 0,
             startTime: Date.now(),
             lastSave: Date.now(),
-            prestigeCurrency: 0, // Novelos de Ouro
+            prestigeCurrency: 0,
+            prestigeCount: 0,
+            totalClicks: 0,
+            maxCombo: 0,
+            activeSkin: '🐱',
             buildings: [
                 { id: 'b0', name: 'Mão Humana', baseCost: 15, cps: 0.1, count: 0, icon: '👆' },
                 { id: 'b1', name: 'Caixa de Papelão', baseCost: 100, cps: 1, count: 0, icon: '📦' },
@@ -463,57 +485,66 @@
                 { id: 'bst3', name: 'Automação', cost: 5000000, target: 'b4', mult: 2, owned: false, icon: '⚙️' }
             ],
             achievements: [
-                { id: 'ach0', name: 'Iniciante', req: 100, type: 'score', unlocked: false, desc: 'Colete 100 ronrons' },
-                { id: 'ach1', name: 'Louco dos Gatos', req: 50, type: 'building', unlocked: false, desc: 'Tenha 50 estruturas totais' },
-                { id: 'ach2', name: 'Milionário', req: 1000000, type: 'score', unlocked: false, desc: 'Colete 1 milhão de ronrons' }
+                { id: 'ach0', name: 'Iniciante', req: 100, type: 'score', unlocked: false, desc: '100 ronrons' },
+                { id: 'ach1', name: 'Louco dos Gatos', req: 50, type: 'building', unlocked: false, desc: '50 estruturas' },
+                { id: 'ach2', name: 'Milionário', req: 1000000, type: 'score', unlocked: false, desc: '1 milhão de ronrons' },
+                { id: 'ach3', name: 'Ascendido', req: 1, type: 'prestige', unlocked: false, desc: 'Faça 1 ascensão' }
+            ],
+            skins: [
+                { id: 's0', icon: '🐱', name: 'Clássico', unlocked: true, type: 'default' },
+                { id: 's1', icon: '😼', name: 'Astuto', unlocked: false, type: 'ach', reqId: 'ach1' },
+                { id: 's2', icon: '😿', name: 'Sad Boy', unlocked: false, type: 'ach', reqId: 'ach0' },
+                { id: 's3', icon: '😻', name: 'Apaixonado', unlocked: false, type: 'buy', cost: 1, currency: 'gold' },
+                { id: 's4', icon: '🙀', name: 'Assustado', unlocked: false, type: 'buy', cost: 3, currency: 'gold' },
+                { id: 's5', icon: '🤖', name: 'Robo-Cat', unlocked: false, type: 'ach', reqId: 'ach2' },
+                { id: 's6', icon: '🦁', name: 'O Rei', unlocked: false, type: 'buy', cost: 10, currency: 'gold' },
+                { id: 's7', icon: '👽', name: 'Alien', unlocked: false, type: 'ach', reqId: 'ach3' },
+                { id: 's8', icon: '💩', name: 'Oops', unlocked: false, type: 'buy', cost: 100, currency: 'gold' }
             ]
         };
 
+        let game = JSON.parse(JSON.stringify(defaultGame));
+        
         // Estado da UI
         let currentTab = 'buildings';
         let buyMultiplier = 1;
         let globalCPS = 0;
         let clickPower = 1;
-
-        // --- NOTICIÁRIO ---
-        const newsLines = [
-            "Cientistas confirmam: O universo é feito de pelos de gato.",
-            "Gato derruba copo da borda da Terra Plana.",
-            "Mercado de sachê sobe 500% após investimento felino.",
-            "Cachorros pedem trégua, mas são ignorados.",
-            "Novo imperador do mundo exige caixas de papelão maiores.",
-            "Ronronar é declarado a nova fonte de energia renovável."
-        ];
-        function updateTicker() {
-            const ticker = document.getElementById('ticker');
-            const line = newsLines[Math.floor(Math.random() * newsLines.length)];
-            // Reset animation trick
-            const newTicker = ticker.cloneNode(true);
-            newTicker.textContent = line;
-            ticker.parentNode.replaceChild(newTicker, ticker);
-        }
-        setInterval(updateTicker, 10000);
+        let clickIncomeHistory = []; // Para armazenar ganhos de clique no último segundo
+        
+        // Combo System
+        let comboValue = 0;
+        let comboTimer = 0;
+        let comboMultiplier = 1;
 
         // --- CORE LOGIC ---
-
         function init() {
             loadGame();
+            
+            // Garantir que skins existam em saves antigos
+            if(!game.skins || game.skins.length < defaultGame.skins.length) {
+                game.skins = JSON.parse(JSON.stringify(defaultGame.skins));
+            }
+
             recalcStats();
             renderStore();
-            setInterval(gameLoop, 100); // 10 ticks por segundo
-            setInterval(saveGame, 30000); // Autosave 30s
-            setInterval(trySpawnGoldenCat, 60000); // Tenta spawnar gato dourado a cada 1m
+            updateCatSkin();
+
+            setInterval(gameLoop, 100); 
+            setInterval(saveGame, 30000); 
+            setInterval(trySpawnGoldenCat, 60000); 
+            setInterval(updateTicker, 15000);
             
-            // Verifica offline
-            const now = Date.now();
-            const diff = (now - game.lastSave) / 1000;
-            if (diff > 60 && globalCPS > 0) {
-                const earned = diff * globalCPS;
-                game.score += earned;
-                game.totalScore += earned;
-                document.getElementById('offline-gains').innerText = formatNumber(earned);
-                toggleModal('modal-offline');
-            }
+            checkOfflineProgress();
+            
+            // Setup Listeners
+            document.getElementById('cat-clicker').addEventListener('pointerdown', clickCat);
+            
+            // Botões do menu inferior
+            document.getElementById('btn-stats').onclick = openStats;
+            document.getElementById('btn-skins').onclick = openSkins;
+            document.getElementById('btn-prestige').onclick = openPrestigeModal;
+            document.getElementById('btn-settings').onclick = () => toggleModal('modal-settings');
         }
 
         function gameLoop() {
@@ -523,38 +554,133 @@
                 game.score += gain;
                 game.totalScore += gain;
             }
+
+            // Combo Decay
+            if (comboValue > 0) {
+                comboTimer += 100;
+                if (comboTimer > 1500) { // 1.5s sem clicar = perde combo
+                    comboValue -= 2;
+                    if (comboValue < 0) comboValue = 0;
+                    updateComboUI();
+                }
+            }
+
             updateUI();
             checkAchievements();
         }
 
         function clickCat(e) {
             playSound('click');
+            game.totalClicks++;
             
-            // Crit chance (1% base)
-            let isCrit = Math.random() < 0.01;
-            let amount = clickPower * (isCrit ? 5 : 1);
+            // Combo Logic
+            comboValue++;
+            if (comboValue > 100) comboValue = 100;
+            if (comboValue > game.maxCombo) game.maxCombo = comboValue;
+            comboTimer = 0;
+            updateComboUI();
+
+            // Calculate Gain
+            let isCrit = Math.random() < 0.02; // 2% crit
+            let amount = clickPower * comboMultiplier * (isCrit ? 5 : 1);
             
+            // Registra ganho para o CPS dinâmico
+            clickIncomeHistory.push({ time: Date.now(), amount: amount });
+
             game.score += amount;
             game.totalScore += amount;
 
-            // Visual Effect
+            // Visuals
             createParticle(e.clientX, e.clientY, `+${formatNumber(amount)}`, isCrit);
             
             const cat = document.getElementById('cat-emoji');
             cat.style.transform = 'scale(0.9)';
-            setTimeout(() => cat.style.transform = 'scale(1)', 50);
+            if(isCrit) document.getElementById('cat-area').classList.add('shake');
+            setTimeout(() => {
+                cat.style.transform = 'scale(1)';
+                document.getElementById('cat-area').classList.remove('shake');
+            }, 50);
         }
 
-        document.getElementById('cat-clicker').addEventListener('pointerdown', clickCat);
+        function updateComboUI() {
+            const container = document.getElementById('combo-bar-container');
+            const fill = document.getElementById('combo-fill');
+            const text = document.getElementById('combo-text');
 
-        // --- CALCULAÇÕES ---
+            if (comboValue > 0) {
+                container.style.display = 'block';
+                text.style.opacity = 1;
+                fill.style.width = comboValue + '%';
+                
+                // Multiplier math: 1 + (combo / 20) -> Max 6x com 100 combo
+                comboMultiplier = 1 + (comboValue / 20);
+                text.innerText = `COMBO x${comboMultiplier.toFixed(1)}`;
+            } else {
+                text.style.opacity = 0;
+                comboMultiplier = 1;
+                setTimeout(() => { if(comboValue === 0) container.style.display = 'none'; }, 200);
+            }
+        }
 
+        // --- SKINS SYSTEM ---
+        function openSkins() {
+            const grid = document.getElementById('skins-grid');
+            grid.innerHTML = '';
+            
+            game.skins.forEach((skin, index) => {
+                const btn = document.createElement('div');
+                let className = 'skin-btn';
+                if (game.activeSkin === skin.icon) className += ' active';
+                if (!skin.unlocked) className += ' locked';
+                
+                btn.className = className;
+                btn.innerHTML = `
+                    <div style="font-size:2rem;">${skin.icon}</div>
+                    <div style="font-size:0.8rem; margin-top:5px;">${skin.name}</div>
+                    ${!skin.unlocked && skin.type === 'buy' ? `<div style="font-size:0.7rem; color:var(--accent)">${skin.cost} 🧶</div>` : ''}
+                    ${!skin.unlocked && skin.type === 'ach' ? `<div style="font-size:0.7rem; color:#aaa;">Bloqueado</div>` : ''}
+                `;
+
+                btn.onclick = () => selectSkin(index);
+                grid.appendChild(btn);
+            });
+
+            toggleModal('modal-skins');
+        }
+
+        function selectSkin(index) {
+            const skin = game.skins[index];
+            if (skin.unlocked) {
+                game.activeSkin = skin.icon;
+                updateCatSkin();
+                openSkins(); // Re-render to update active class
+            } else if (skin.type === 'buy') {
+                if (game.prestigeCurrency >= skin.cost) {
+                    game.prestigeCurrency -= skin.cost;
+                    skin.unlocked = true;
+                    game.activeSkin = skin.icon;
+                    playSound('buy');
+                    recalcStats(); // Atualiza display de novelos
+                    updateCatSkin();
+                    openSkins();
+                } else {
+                    spawnToast('Ops', 'Novelos insuficientes!');
+                }
+            } else {
+                spawnToast('Bloqueado', 'Complete a conquista necessária.');
+            }
+        }
+
+        function updateCatSkin() {
+            document.getElementById('cat-emoji').innerText = game.activeSkin;
+        }
+
+        // --- STATS SYSTEM ---
         function recalcStats() {
             // Base CPS
             let cps = 0;
             game.buildings.forEach(b => {
                 let multiplier = 1;
-                // Aplica boosts
                 game.boosts.forEach(bst => {
                     if (bst.owned && bst.target === b.id) multiplier *= bst.mult;
                 });
@@ -567,22 +693,39 @@
                 cPower += u.count * u.power;
             });
 
-            // Prestígio Multiplier (10% por novelo)
+            // Prestige Multiplier (10% por novelo)
             const prestigeMult = 1 + (game.prestigeCurrency * 0.10);
             
             globalCPS = cps * prestigeMult;
             clickPower = cPower * prestigeMult;
 
-            // Atualiza UI de prestígio
+            // Update Prestige Display
             const pDisplay = document.getElementById('prestige-display');
-            if (game.prestigeCurrency > 0) {
+            if (game.prestigeCurrency > 0 || game.prestigeCount > 0) {
                 pDisplay.style.display = 'block';
-                pDisplay.innerText = `🧶 Novelos de Ouro: ${formatNumber(game.prestigeCurrency)} (+${formatNumber(game.prestigeCurrency * 10)}% bônus)`;
+                pDisplay.innerText = `🧶 Novelos de Ouro: ${formatNumber(game.prestigeCurrency)} (+${formatNumber(game.prestigeCurrency * 10)}%)`;
+            } else {
+                pDisplay.style.display = 'none';
             }
         }
 
-        // --- STORE LOGIC ---
+        function openStats() {
+            const content = document.getElementById('stats-content');
+            const now = Date.now();
+            const hours = ((now - game.startTime) / 3600000).toFixed(1);
+            
+            content.innerHTML = `
+                <div class="stats-row"><span class="stats-lbl">Ronrons Totais:</span><span class="stats-val">${formatNumber(game.totalScore)}</span></div>
+                <div class="stats-row"><span class="stats-lbl">Total de Cliques:</span><span class="stats-val">${formatNumber(game.totalClicks)}</span></div>
+                <div class="stats-row"><span class="stats-lbl">Maior Combo:</span><span class="stats-val">x${(1 + game.maxCombo/20).toFixed(2)}</span></div>
+                <div class="stats-row"><span class="stats-lbl">Ascensões:</span><span class="stats-val">${game.prestigeCount}</span></div>
+                <div class="stats-row"><span class="stats-lbl">Tempo Jogado:</span><span class="stats-val">${hours} horas</span></div>
+                <div class="stats-row"><span class="stats-lbl">Estruturas:</span><span class="stats-val">${game.buildings.reduce((a,b)=>a+b.count,0)}</span></div>
+            `;
+            toggleModal('modal-stats');
+        }
 
+        // --- STORE LOGIC ---
         function switchTab(tab) {
             currentTab = tab;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -597,14 +740,16 @@
             renderStore();
         }
 
-        function getBuildingCost(b, count) {
+        // Nova função para calcular preço de upgrade em massa
+        function getUpgradeCost(u, count) {
             let total = 0;
-            let currentCost = b.baseCost * Math.pow(1.15, b.count);
+            let currentCost = Math.floor(u.cost * Math.pow(1.5, u.count)); 
+            let currentLevel = u.count;
+            
             for(let i=0; i<count; i++) {
-                total += currentCost;
-                currentCost *= 1.15;
+                total += Math.floor(u.cost * Math.pow(1.5, currentLevel + i));
             }
-            return Math.floor(total);
+            return total;
         }
 
         function renderStore() {
@@ -617,10 +762,11 @@
             else if (currentTab === 'boosts') items = game.boosts;
 
             items.forEach((item, index) => {
+                // Filtro para boosts já comprados
+                if (currentTab === 'boosts' && item.owned) return;
+
                 const el = document.createElement('div');
-                
-                let cost, name, desc, owned;
-                let canBuy = false;
+                let cost, name, desc, owned, canBuy;
 
                 if (currentTab === 'buildings') {
                     cost = getBuildingCost(item, buyMultiplier);
@@ -629,22 +775,19 @@
                     owned = item.count;
                     canBuy = game.score >= cost;
                 } else if (currentTab === 'upgrades') {
-                    // Custo fixo escalonado simples para exemplo
-                    cost = Math.floor(item.cost * Math.pow(1.5, item.count)); 
+                    // Custo agora usa função de massa
+                    cost = getUpgradeCost(item, buyMultiplier); 
                     name = item.name;
-                    desc = `+${item.power} Clique`;
+                    desc = `+${item.power * buyMultiplier} Clique`;
                     owned = item.count;
                     canBuy = game.score >= cost;
                 } else {
                     cost = item.cost;
                     name = item.name;
-                    desc = `x${item.mult} para ${getBuildingName(item.target)}`;
-                    owned = item.owned ? "OK" : "";
-                    canBuy = !item.owned && game.score >= cost;
+                    desc = `x${item.mult} produção`;
+                    owned = "";
+                    canBuy = game.score >= cost;
                 }
-
-                // Não renderiza boosts já comprados para limpar a lista
-                if (currentTab === 'boosts' && item.owned) return;
 
                 el.className = `store-item ${canBuy ? '' : 'disabled'}`;
                 el.onclick = () => buyItem(currentTab, index);
@@ -660,11 +803,21 @@
                 `;
                 list.appendChild(el);
             });
+            
+            // Mensagem se não houver boosts
+            if (currentTab === 'boosts' && items.every(i => i.owned)) {
+                list.innerHTML = '<div style="text-align:center; padding:20px; color:#777;">Tudo comprado!</div>';
+            }
         }
 
-        function getBuildingName(id) {
-            const b = game.buildings.find(x => x.id === id);
-            return b ? b.name : '???';
+        function getBuildingCost(b, count) {
+            let total = 0;
+            let currentCost = b.baseCost * Math.pow(1.15, b.count);
+            for(let i=0; i<count; i++) {
+                total += currentCost;
+                currentCost *= 1.15;
+            }
+            return Math.floor(total);
         }
 
         function buyItem(type, index) {
@@ -675,167 +828,137 @@
                 if (game.score >= cost) {
                     game.score -= cost;
                     b.count += buyMultiplier;
-                    recalcStats();
-                    renderStore();
+                    recalcStats(); renderStore();
                 }
             } else if (type === 'upgrades') {
                 const u = game.clickUpgrades[index];
-                const cost = Math.floor(u.cost * Math.pow(1.5, u.count));
+                // Compra agora usa custo e lógica de massa
+                const cost = getUpgradeCost(u, buyMultiplier);
                 if (game.score >= cost) {
                     game.score -= cost;
-                    u.count++;
-                    recalcStats();
-                    renderStore();
+                    u.count += buyMultiplier;
+                    recalcStats(); renderStore();
                 }
             } else if (type === 'boosts') {
                 const bst = game.boosts[index];
                 if (!bst.owned && game.score >= bst.cost) {
                     game.score -= bst.cost;
                     bst.owned = true;
-                    recalcStats();
-                    renderStore();
+                    recalcStats(); renderStore();
                     spawnToast('Upgrade!', `Você comprou ${bst.name}`);
                 }
             }
         }
 
-        // --- PRESTIGE SYSTEM ---
-        document.getElementById('btn-prestige').onclick = () => {
-            // Fórmula: Raiz cúbica do total score / 1 milhão
+        // --- PRESTIGE ---
+        function openPrestigeModal() {
             const potential = Math.floor(Math.cbrt(game.totalScore / 1000000));
-            
-            // Só vale a pena se ganhar algo
-            if (potential <= game.prestigeCurrency) {
-                document.getElementById('prestige-reward-amount').innerText = "0";
-                // Ainda abre o modal para mostrar info
-            } else {
-                document.getElementById('prestige-reward-amount').innerText = `+${formatNumber(potential - game.prestigeCurrency)}`;
-            }
+            const gain = Math.max(0, potential - game.prestigeCurrency);
+            document.getElementById('prestige-reward-amount').innerText = `+${formatNumber(gain)}`;
             toggleModal('modal-prestige');
-        };
+        }
 
         function doPrestige() {
             const potential = Math.floor(Math.cbrt(game.totalScore / 1000000));
-            if (potential > game.prestigeCurrency) {
-                // Hard Reset na economia, mantém stats de conquista/prestigio
-                const earned = potential - game.prestigeCurrency;
-                game.prestigeCurrency += earned;
+            const gain = Math.max(0, potential - game.prestigeCurrency);
+            
+            if (gain > 0) {
+                game.prestigeCurrency += gain;
+                game.prestigeCount++;
                 
-                // Reset Buildings/Upgrades/Money
+                // Reset Logica
                 game.score = 0;
                 game.buildings.forEach(b => b.count = 0);
                 game.clickUpgrades.forEach(u => u.count = 0);
-                game.boosts.forEach(b => b.owned = false);
-                
-                game.startTime = Date.now();
-                
+                // game.boosts.forEach(b => b.owned = false); // Decisão de design: não resetar boosts nessa versão v3
+
                 recalcStats();
                 renderStore();
                 toggleModal('modal-prestige');
-                spawnToast('Ascensão!', `Você renasceu com ${game.prestigeCurrency} Novelos de Ouro.`);
+                spawnToast('Ascensão!', 'O universo foi resetado.');
+            } else {
+                toggleModal('modal-prestige');
+                spawnToast('Ascensão Falhou', 'Você precisa de mais ronrons.');
             }
         }
 
-        // --- EVENTS ---
-
-        function trySpawnGoldenCat() {
-            // 30% chance a cada minuto
-            if (Math.random() > 0.7) { 
-                const cat = document.createElement('div');
-                cat.textContent = '😸';
-                cat.className = 'golden-cat';
-                
-                // Posição aleatória na tela
-                const x = Math.random() * (window.innerWidth - 100);
-                const y = Math.random() * (window.innerHeight - 100);
-                
-                cat.style.left = x + 'px';
-                cat.style.top = y + 'px';
-                
-                cat.onclick = () => {
-                    playSound('golden');
-                    const bonus = globalCPS * 300; // 5 minutos de produção
-                    game.score += bonus;
-                    spawnToast('Gato Dourado!', `+${formatNumber(bonus)} Ronrons!`);
-                    createParticle(x, y, `+${formatNumber(bonus)}`, true);
-                    cat.remove();
-                };
-
-                document.body.appendChild(cat);
-                
-                // Desaparece em 10s
-                setTimeout(() => { if(cat.parentNode) cat.remove(); }, 10000);
-            }
-        }
-
-        function checkAchievements() {
-            game.achievements.forEach(ach => {
-                if (ach.unlocked) return;
-                
-                let condition = false;
-                if (ach.type === 'score' && game.totalScore >= ach.req) condition = true;
-                if (ach.type === 'building') {
-                    const totalB = game.buildings.reduce((a,b) => a + b.count, 0);
-                    if (totalB >= ach.req) condition = true;
-                }
-
-                if (condition) {
-                    ach.unlocked = true;
-                    spawnToast('Conquista!', ach.name);
-                    playSound('golden'); // Reusing golden sound
-                }
+        // --- SETTINGS / SAVE ---
+        function exportSave() {
+            saveGame();
+            const saveStr = btoa(JSON.stringify(game));
+            navigator.clipboard.writeText(saveStr).then(() => {
+                spawnToast('Sucesso', 'Save copiado para a área de transferência!');
             });
         }
 
-        // --- UTILS ---
+        function openImport() {
+            document.getElementById('import-section').style.display = 'block';
+        }
 
-        function updateUI() {
-            document.getElementById('score').innerText = formatNumber(Math.floor(game.score));
-            document.getElementById('cps').innerText = formatNumber(globalCPS.toFixed(1));
-            
-            // Título da aba
-            document.title = `${formatNumber(Math.floor(game.score))} Ronrons - Mestre dos Gatos`;
-
-            // Verifica botões da loja para habilitar/desabilitar visualmente
-            // (Otimização: fazer isso menos frequentemente em jogos muito grandes)
-            const storeItems = document.querySelectorAll('.store-item');
-            if (storeItems.length > 0 && currentTab === 'buildings') {
-                 // Simplificação: apenas atualiza se pode comprar ou não
-                 // Idealmente, renderStore só roda quando algo muda pra valer
+        function importSave() {
+            try {
+                const str = document.getElementById('import-text').value;
+                const json = JSON.parse(atob(str));
+                if (json.score !== undefined) {
+                    game = json;
+                    saveGame();
+                    location.reload();
+                } else {
+                    alert("Save inválido!");
+                }
+            } catch(e) {
+                alert("Erro ao importar save.");
             }
+        }
+
+        function hardReset() {
+            if(confirm("TEM CERTEZA? Isso apaga TODO o progresso para sempre.")) {
+                localStorage.removeItem('mestreGatosSave_v3');
+                location.reload();
+            }
+        }
+
+        // --- UTILS ---
+        function updateUI() {
+            // Calcula CPS Ativo (Cliques do último segundo)
+            const now = Date.now();
+            clickIncomeHistory = clickIncomeHistory.filter(c => now - c.time < 1000);
+            const activeCPS = clickIncomeHistory.reduce((acc, c) => acc + c.amount, 0);
+            const totalDisplayCPS = globalCPS + activeCPS;
+
+            document.getElementById('score').innerText = formatNumber(Math.floor(game.score));
+            
+            // Texto detalhado de CPS
+            const cpsEl = document.getElementById('cps');
+            cpsEl.innerHTML = `${formatNumber(totalDisplayCPS.toFixed(1))} <span class="cps-detail">(Passivo: ${formatNumber(globalCPS.toFixed(1))})</span>`;
+            
+            document.title = `${formatNumber(Math.floor(game.score))} Ronrons - v3`;
         }
 
         function createParticle(x, y, text, isCrit) {
             const el = document.createElement('div');
             el.className = `particle ${isCrit ? 'crit' : ''}`;
             el.innerText = text;
-            el.style.left = (x - 20) + 'px';
-            el.style.top = (y - 20) + 'px';
+            el.style.left = (x - 20 + Math.random()*40-20) + 'px';
+            el.style.top = (y - 30) + 'px';
             document.body.appendChild(el);
-            setTimeout(() => el.remove(), 1000);
+            setTimeout(() => el.remove(), 800);
         }
 
         function spawnToast(title, msg) {
             const container = document.getElementById('achievement-container');
             const el = document.createElement('div');
             el.className = 'achievement-toast';
-            el.innerHTML = `
-                <div class="ach-icon">🏆</div>
-                <div>
-                    <div style="font-weight:bold; color:var(--accent)">${title}</div>
-                    <div style="font-size:0.9rem">${msg}</div>
-                </div>
-            `;
+            el.innerHTML = `<div><div style="font-weight:bold; color:var(--accent)">${title}</div><div style="font-size:0.9rem">${msg}</div></div>`;
             container.appendChild(el);
             setTimeout(() => {
                 el.style.animation = 'fadeOutUp 0.5s forwards';
                 setTimeout(() => el.remove(), 500);
-            }, 4000);
+            }, 3000);
         }
 
         function toggleModal(id) {
-            const el = document.getElementById(id);
-            el.classList.toggle('active');
+            document.getElementById(id).classList.toggle('active');
         }
 
         function formatNumber(num) {
@@ -843,50 +966,103 @@
             const suffixes = ["", "k", "M", "B", "T", "Qa", "Qi"];
             const suffixNum = Math.floor(("" + Math.floor(num)).length / 3);
             let shortValue = parseFloat((suffixNum != 0 ? (num / Math.pow(1000, suffixNum)) : num).toPrecision(3));
-            if (shortValue % 1 != 0) {
-                shortValue = shortValue.toFixed(1);
-            }
+            if (shortValue % 1 != 0) shortValue = shortValue.toFixed(1);
             return shortValue + suffixes[suffixNum];
         }
 
-        // --- SAVE SYSTEM ---
+        // --- TICKER & EVENTS ---
+        const newsLines = [
+            "Gato derruba caneca e culpa o vento.",
+            "Mercado de papelão sobe 500%.",
+            "Cientistas descobrem que ronrons curam tristeza.",
+            "Seu império felino é visível da lua.",
+            "Cachorros pedem trégua mundial.",
+            "Novo decreto: Sachê obrigatório às 15h."
+        ];
+        function updateTicker() {
+            const ticker = document.getElementById('ticker');
+            const line = newsLines[Math.floor(Math.random() * newsLines.length)];
+            const newTicker = ticker.cloneNode(true);
+            newTicker.textContent = line;
+            ticker.parentNode.replaceChild(newTicker, ticker);
+        }
+
+        function trySpawnGoldenCat() {
+            if (Math.random() > 0.6) { 
+                const cat = document.createElement('div');
+                cat.textContent = '😸'; cat.className = 'golden-cat';
+                cat.style.left = Math.random() * (window.innerWidth - 100) + 'px';
+                cat.style.top = Math.random() * (window.innerHeight - 100) + 'px';
+                cat.onclick = () => {
+                    playSound('golden');
+                    const bonus = globalCPS * 300 + 1000;
+                    game.score += bonus;
+                    spawnToast('Gato Dourado!', `+${formatNumber(bonus)} Ronrons!`);
+                    cat.remove();
+                };
+                document.body.appendChild(cat);
+                setTimeout(() => { if(cat.parentNode) cat.remove(); }, 8000);
+            }
+        }
+
+        function checkAchievements() {
+            game.achievements.forEach(ach => {
+                if (ach.unlocked) return;
+                let condition = false;
+                if (ach.type === 'score' && game.totalScore >= ach.req) condition = true;
+                if (ach.type === 'building' && game.buildings.reduce((a,b)=>a+b.count,0) >= ach.req) condition = true;
+                if (ach.type === 'prestige' && game.prestigeCount >= ach.req) condition = true;
+
+                if (condition) {
+                    ach.unlocked = true;
+                    spawnToast('Conquista!', ach.name);
+                    playSound('golden');
+                    // Verificar se desbloqueou skin
+                    game.skins.forEach(skin => {
+                        if (skin.type === 'ach' && skin.reqId === ach.id) {
+                            spawnToast('Nova Skin!', `Você desbloqueou: ${skin.name}`);
+                            skin.unlocked = true;
+                        }
+                    });
+                }
+            });
+        }
+
+        function checkOfflineProgress() {
+            const now = Date.now();
+            const diff = (now - game.lastSave) / 1000;
+            if (diff > 60 && globalCPS > 0) {
+                const earned = diff * globalCPS;
+                game.score += earned;
+                game.totalScore += earned;
+                document.getElementById('offline-gains').innerText = formatNumber(earned);
+                toggleModal('modal-offline');
+            }
+        }
+
+        // --- SAVE/LOAD ---
         function saveGame() {
             game.lastSave = Date.now();
-            localStorage.setItem('mestreGatosSave_v2', JSON.stringify(game));
+            localStorage.setItem('mestreGatosSave_v3', JSON.stringify(game));
         }
 
         function loadGame() {
-            const saved = JSON.parse(localStorage.getItem('mestreGatosSave_v2'));
+            const saved = JSON.parse(localStorage.getItem('mestreGatosSave_v3'));
             if (saved) {
-                // Merge seguro para evitar erros em updates futuros
-                game = { ...game, ...saved };
-                // Garante que arrays de objetos tenham merge correto se adicionarmos novos items
-                if (saved.buildings) {
-                    game.buildings.forEach((b, i) => {
-                        if (saved.buildings[i]) b.count = saved.buildings[i].count;
-                    });
-                }
-                if (saved.clickUpgrades) {
-                    game.clickUpgrades.forEach((u, i) => {
-                        if (saved.clickUpgrades[i]) u.count = saved.clickUpgrades[i].count;
-                    });
-                }
-                if (saved.boosts) {
-                    game.boosts.forEach((b, i) => {
-                        if (saved.boosts[i]) b.owned = saved.boosts[i].owned;
-                    });
-                }
-                if (saved.achievements) {
-                    game.achievements.forEach((a, i) => {
-                        if (saved.achievements[i]) a.unlocked = saved.achievements[i].unlocked;
-                    });
+                // Deep merge para garantir compatibilidade
+                game = { ...defaultGame, ...saved };
+                game.buildings.forEach((b, i) => { if(saved.buildings[i]) b.count = saved.buildings[i].count; });
+                game.clickUpgrades.forEach((u, i) => { if(saved.clickUpgrades[i]) u.count = saved.clickUpgrades[i].count; });
+                game.boosts.forEach((b, i) => { if(saved.boosts[i]) b.owned = saved.boosts[i].owned; });
+                game.achievements.forEach((a, i) => { if(saved.achievements[i]) a.unlocked = saved.achievements[i].unlocked; });
+                // Load Skins status
+                if(saved.skins) {
+                     game.skins.forEach((s, i) => { if(saved.skins[i]) s.unlocked = saved.skins[i].unlocked; });
                 }
             }
         }
 
-        // Start
         init();
-
     </script>
 </body>
 </html>
